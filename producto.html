@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Producto - IA Decorate</title>
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Iconos (Font Awesome) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Estilos personalizados -->
+  <link rel="stylesheet" href="css/style.css">
+  
+  <style>
+    .product-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      width: 100%;
+      flex: 1;
+      align-items: center;
+      padding: 40px;
+    }
+
+    .product-image-section {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+    }
+
+    .product-image {
+      width: 100%;
+      max-width: 500px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .product-image img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .product-details {
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+      height: 100%;
+      justify-content: center;
+    }
+
+    .product-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+    }
+
+    .product-title {
+      font-size: 42px;
+      font-weight: 900;
+      color: var(--text-dark);
+      line-height: 1.2;
+    }
+
+    .product-price {
+      font-size: 42px;
+      font-weight: 900;
+      color: var(--text-dark);
+      white-space: nowrap;
+    }
+
+    .measurements-section {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .measurements-title {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--text-dark);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .measurement-item {
+      font-size: 16px;
+      color: var(--text-dark);
+      font-weight: 600;
+    }
+
+    .measurement-label {
+      display: inline;
+      font-weight: 900;
+    }
+
+    .measurement-value {
+      display: inline;
+      font-weight: 600;
+    }
+
+    /* DESCRIPCIÓN Y DETALLES ADICIONALES */
+    .product-description {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      padding-top: 20px;
+      border-top: 2px solid rgba(0, 0, 0, 0.2);
+    }
+
+    .description-title {
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--text-dark);
+      text-transform: uppercase;
+    }
+
+    .description-text {
+      font-size: 14px;
+      color: var(--text-dark);
+      line-height: 1.6;
+      text-align: justify;
+    }
+
+    /* BOTONES DE ACCIÓN */
+    .product-actions {
+      display: flex;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .btn-add-cart {
+      flex: 1;
+      padding: 14px 20px;
+      background-color: var(--white);
+      color: var(--text-dark);
+      border: none;
+      border-radius: var(--input-radius);
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-add-cart:hover {
+      background-color: #f9f9f9;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-wishlist {
+      padding: 14px 20px;
+      background-color: transparent;
+      color: var(--text-dark);
+      border: 2px solid var(--text-dark);
+      border-radius: var(--input-radius);
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-wishlist:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 1024px) {
+      .product-container {
+        grid-template-columns: 1fr;
+        gap: 30px;
+        padding: 30px;
+      }
+
+      .product-header {
+        flex-direction: column;
+      }
+
+      .product-title {
+        font-size: 36px;
+      }
+
+      .product-price {
+        font-size: 36px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .product-container {
+        gap: 25px;
+        padding: 20px;
+      }
+
+      .product-title {
+        font-size: 28px;
+      }
+
+      .product-price {
+        font-size: 28px;
+      }
+
+      .measurements-title {
+        font-size: 18px;
+      }
+
+      .measurement-item {
+        font-size: 14px;
+      }
+
+      .description-title {
+        font-size: 16px;
+      }
+
+      .description-text {
+        font-size: 13px;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .product-container {
+        gap: 20px;
+        padding: 15px;
+      }
+
+      .product-title {
+        font-size: 24px;
+      }
+
+      .product-price {
+        font-size: 24px;
+      }
+
+      .measurements-title {
+        font-size: 16px;
+      }
+
+      .measurement-item {
+        font-size: 13px;
+      }
+
+      .description-title {
+        font-size: 14px;
+      }
+
+      .description-text {
+        font-size: 12px;
+      }
+
+      .product-actions {
+        flex-direction: column;
+      }
+
+      .btn-add-cart,
+      .btn-wishlist {
+        font-size: 13px;
+        padding: 12px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- ===========================
+       OVERLAY SIDEBAR
+       =========================== -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- ===========================
+       SIDEBAR MENU
+       =========================== -->
+  <aside class="sidebar" id="sidebar">
+    <button class="sidebar-close" id="sidebarClose">
+      <i class="fas fa-times"></i>
+    </button>
+    <ul class="sidebar-menu">
+      <li><a href="entorno.html">3D</a></li>
+      <li><a href="mensajeria.html">Mensajería</a></li>
+      <li><a href="info.html">INFO</a></li>
+      <li><a href="incidencias.html">Incidencias</a></li>
+      <li><a href="catalogo.html">Catálogo</a></li>
+    </ul>
+  </aside>
+
+  <!-- ===========================
+       HEADER / NAVBAR
+       =========================== -->
+  <header class="navbar-custom">
+    <div class="d-flex align-items-center justify-content-between w-100">
+      <!-- Botón Hamburguesa -->
+      <button class="navbar-brand-icon" id="menuToggle" title="Menú">
+        <i class="fas fa-bars"></i>
+      </button>
+
+      <!-- Barra de Búsqueda -->
+      <div class="search-container d-none d-sm-block">
+        <input 
+          type="text" 
+          class="search-input" 
+          placeholder="Busque aquí"
+        >
+      </div>
+
+      <!-- Iconos de la derecha -->
+      <div class="navbar-icons">
+        <!-- Búsqueda móvil -->
+        <button class="icon-btn d-sm-none" title="Buscar">
+          <i class="fas fa-search"></i>
+        </button>
+
+        <!-- Icono Búsqueda (desktop) -->
+        <button class="icon-btn d-none d-sm-block" title="Buscar">
+          <i class="fas fa-search"></i>
+        </button>
+
+        <!-- Perfil con Dropdown -->
+        <div class="profile-dropdown">
+          <button class="icon-btn" id="profileBtn" title="Perfil">
+            <i class="fas fa-user"></i>
+          </button>
+          <div class="profile-menu" id="profileMenu">
+            <a href="perfil.html"><i class="fas fa-edit"></i> Editar Perfil</a>
+            <a href="pedidos.html"><i class="fas fa-box"></i> Ver mis Pedidos</a>
+          </div>
+        </div>
+
+        <!-- Carrito -->
+        <button class="icon-btn" title="Carrito">
+          <a class="carro" href="carrito.html">
+            <i class="fas fa-shopping-cart"></i>
+          </a>
+        </button>
+      </div>
+    </div>
+
+    <!-- Barra de búsqueda móvil -->
+    <div class="search-container d-sm-none mt-2">
+      <input 
+        type="text" 
+        class="search-input" 
+        placeholder="Busque aquí"
+      >
+    </div>
+  </header>
+
+  <!-- ===========================
+       CONTENIDO PRINCIPAL
+       =========================== -->
+  <main class="main-content">
+    <div class="product-container">
+      <!-- COLUMNA IZQUIERDA: IMAGEN -->
+      <div class="product-image-section">
+        <div class="product-image">
+          <img src="img/image.png" alt="Sofá cheslón">
+        </div>
+      </div>
+
+      <!-- COLUMNA DERECHA: DETALLES -->
+      <div class="product-details">
+        <!-- NOMBRE Y PRECIO -->
+        <div class="product-header">
+          <h1 class="product-title">Sofá cheslón</h1>
+          <span class="product-price">99$</span>
+        </div>
+
+        <!-- MEDIDAS -->
+        <div class="measurements-section">
+          <h2 class="measurements-title">Medidas</h2>
+          <div class="measurement-item">
+            <span class="measurement-label">Altura:</span>
+            <span class="measurement-value">85 cm</span>
+          </div>
+          <div class="measurement-item">
+            <span class="measurement-label">Ancho:</span>
+            <span class="measurement-value">220 cm</span>
+          </div>
+          <div class="measurement-item">
+            <span class="measurement-label">Profundidad:</span>
+            <span class="measurement-value">90 cm</span>
+          </div>
+        </div>
+
+        <!-- DESCRIPCIÓN -->
+        <div class="product-description">
+          <h3 class="description-title">Descripción</h3>
+          <p class="description-text">
+            Sofá de diseño contemporáneo que combina confort y elegancia. Fabricado con materiales de alta calidad, 
+            es perfecto para cualquier espacio moderno. Sus líneas limpias y su estructura robusta lo hacen ideal 
+            para salas de estar, oficinas o espacios comerciales. Disponible en varios colores y configuraciones.
+          </p>
+        </div>
+
+        <!-- BOTONES DE ACCIÓN -->
+        <div class="product-actions">
+          <button class="btn-add-cart" id="addToCartBtn">
+            <i class="fas fa-shopping-cart"></i> Añadir al carrito
+          </button>
+          <button class="btn-wishlist" id="addToWishlistBtn" title="Agregar a favoritos">
+            <i class="fas fa-heart"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===========================
+       FOOTER
+       =========================== -->
+  <footer class="footer-custom">
+    <div class="footer-content">
+      <a href="#" class="footer-link">Conócenos</a>
+      <a href="#" class="footer-link">Términos y Condiciones</a>
+      <a href="#" class="footer-link">Soporte</a>
+
+      <div class="footer-social">
+        <a href="#" class="social-icon" title="Facebook">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+        <a href="#" class="social-icon" title="Instagram">
+          <i class="fab fa-instagram"></i>
+        </a>
+        <a href="#" class="social-icon" title="TikTok">
+          <i class="fab fa-tiktok"></i>
+        </a>
+        <a href="#" class="social-icon" title="X (Twitter)">
+          <i class="fab fa-x-twitter"></i>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Bootstrap 5 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Scripts personalizados -->
+  <script>
+    // SIDEBAR MENU
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const sidebarClose = document.getElementById('sidebarClose');
+    const sidebarLinks = document.querySelectorAll('.sidebar-menu a');
+
+    menuToggle.addEventListener('click', function() {
+      sidebar.classList.add('active');
+      sidebarOverlay.classList.add('active');
+    });
+
+    const closeSidebar = () => {
+      sidebar.classList.remove('active');
+      sidebarOverlay.classList.remove('active');
+    };
+
+    sidebarClose.addEventListener('click', closeSidebar);
+    sidebarOverlay.addEventListener('click', closeSidebar);
+
+    sidebarLinks.forEach(link => {
+      link.addEventListener('click', closeSidebar);
+    });
+
+    // PROFILE DROPDOWN
+    const profileBtn = document.getElementById('profileBtn');
+    const profileMenu = document.getElementById('profileMenu');
+
+    profileBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      profileMenu.classList.toggle('active');
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.profile-dropdown')) {
+        profileMenu.classList.remove('active');
+      }
+    });
+
+    // ADD TO CART BUTTON
+    const addToCartBtn = document.getElementById('addToCartBtn');
+    if (addToCartBtn) {
+      addToCartBtn.addEventListener('click', function() {
+        // Aquí iría la lógica para agregar al carrito
+        alert('Producto agregado al carrito');
+      });
+    }
+
+    // ADD TO WISHLIST BUTTON
+    const addToWishlistBtn = document.getElementById('addToWishlistBtn');
+    if (addToWishlistBtn) {
+      addToWishlistBtn.addEventListener('click', function() {
+        this.style.color = '#e63946';
+        this.style.borderColor = '#e63946';
+        // Aquí iría la lógica para agregar a favoritos
+      });
+    }
+
+    // RESPONSIVE
+    window.addEventListener('resize', function() {
+      if (window.innerWidth > 768) {
+        closeSidebar();
+      }
+    });
+  </script>
+</body>
+</html>
