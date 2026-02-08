@@ -307,6 +307,9 @@ body {
   top: 0;
   z-index: 100;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .navbar-brand-icon {
@@ -586,6 +589,52 @@ body {
 }
 
 /* ===========================
+   WELCOME BANNER ADMIN
+   =========================== */
+
+.welcome-banner-admin {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  border-radius: var(--input-radius);
+  padding: 40px;
+  text-align: center;
+  margin-bottom: 40px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.welcome-title {
+  font-size: 2.5em;
+  font-weight: 900;
+  margin-bottom: 10px;
+  color: var(--text-dark);
+}
+
+.welcome-subtitle {
+  font-size: 1.1em;
+  color: var(--text-light);
+  margin: 0;
+}
+
+/* ===========================
+   AD BANNER
+   =========================== */
+
+.ad-banner {
+  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+  border-radius: var(--input-radius);
+  padding: 60px 30px;
+  text-align: center;
+  grid-column: 1 / -1;
+}
+
+.ad-banner h2 {
+  font-size: 1.8em;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+
+
+/* ===========================
    RESPONSIVE LAYOUT
    =========================== */
 
@@ -654,6 +703,26 @@ body {
   .main-content {
     padding: 25px 15px;
   }
+
+  .welcome-title {
+    font-size: 2em;
+  }
+
+  .welcome-subtitle {
+    font-size: 1em;
+  }
+
+  .welcome-banner-admin {
+    padding: 30px 20px;
+  }
+
+  .ad-banner {
+    padding: 40px 20px;
+  }
+
+  .ad-banner h2 {
+    font-size: 1.5em;
+  }
 }
 
 @media (max-width: 576px) {
@@ -709,5 +778,25 @@ body {
 
   .main-content {
     padding: 20px 12px;
+  }
+
+  .welcome-title {
+    font-size: 1.6em;
+  }
+
+  .welcome-subtitle {
+    font-size: 0.9em;
+  }
+
+  .welcome-banner-admin {
+    padding: 25px 15px;
+  }
+
+  .ad-banner {
+    padding: 30px 15px;
+  }
+
+  .ad-banner h2 {
+    font-size: 1.3em;
   }
 }
