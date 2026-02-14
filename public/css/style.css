@@ -1,0 +1,802 @@
+/* ===========================
+   IA DECORATE - ESTILOS CSS
+   Color Principal: #EED09D
+   =========================== */
+
+:root {
+  --primary-color: #EED09D;
+  --primary-dark: #E0C080;
+  --text-dark: #1a1a1a;
+  --text-light: #666;
+  --white: #ffffff;
+  --border-radius: 50px;
+  --input-radius: 25px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--text-dark);
+  background-color: #f5f5f5;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ===========================
+   AUTH CONTAINER PRINCIPAL
+   =========================== */
+
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  padding: 20px;
+}
+
+.auth-card {
+  background: var(--primary-color);
+  border-radius: var(--border-radius);
+  padding: 60px 40px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 450px;
+}
+
+/* ===========================
+   TÍTULOS Y ENCABEZADOS
+   =========================== */
+
+.auth-title {
+  font-size: 32px;
+  font-weight: 900;
+  text-align: center;
+  margin-bottom: 50px;
+  color: var(--text-dark);
+  letter-spacing: -1px;
+}
+
+.auth-subtitle {
+  font-size: 14px;
+  text-align: center;
+  margin-bottom: 30px;
+  color: var(--text-light);
+}
+
+/* ===========================
+   CAMPOS DE FORMULARIO
+   =========================== */
+
+.form-group {
+  margin-bottom: 25px;
+}
+
+.form-label {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--text-dark);
+}
+
+.form-control {
+  width: 100%;
+  padding: 15px 20px;
+  border: none;
+  border-radius: var(--input-radius);
+  font-size: 14px;
+  background-color: var(--white);
+  color: var(--text-dark);
+  transition: box-shadow 0.3s ease;
+}
+
+.form-control:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5);
+  background-color: var(--white);
+}
+
+.form-control::placeholder {
+  color: #999;
+}
+
+/* ===========================
+   BOTONES
+   =========================== */
+
+.btn-auth {
+  width: 100%;
+  padding: 16px 20px;
+  border: none;
+  border-radius: var(--input-radius);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 20px;
+}
+
+.btn-auth-primary {
+  background-color: var(--white);
+  color: var(--text-dark);
+}
+
+.btn-auth-primary:hover {
+  background-color: #f9f9f9;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+}
+
+.btn-auth-secondary {
+  background-color: transparent;
+  color: var(--text-dark);
+  border: 2px solid var(--text-dark);
+}
+
+.btn-auth-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ===========================
+   LINKS Y TEXTOS
+   =========================== */
+
+.auth-links {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.auth-link {
+  font-size: 14px;
+  color: var(--text-dark);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.auth-link:hover {
+  text-decoration: underline;
+}
+
+.auth-footer-text {
+  text-align: center;
+  font-size: 14px;
+  margin-top: 30px;
+  color: var(--text-dark);
+}
+
+.auth-footer-text a {
+  color: var(--text-dark);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.auth-footer-text a:hover {
+  text-decoration: underline;
+}
+
+/* ===========================
+   LAYOUT RESPONSIVO
+   =========================== */
+
+@media (max-width: 576px) {
+  .auth-card {
+    padding: 40px 25px;
+  }
+
+  .auth-title {
+    font-size: 26px;
+    margin-bottom: 40px;
+  }
+
+  .form-label {
+    font-size: 14px;
+  }
+
+  .form-control {
+    padding: 12px 16px;
+    font-size: 13px;
+  }
+
+  .btn-auth {
+    padding: 14px 18px;
+    font-size: 15px;
+  }
+
+  .auth-links {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .auth-link {
+    text-align: center;
+  }
+}
+
+/* ===========================
+   ELEMENTOS ADICIONALES
+   =========================== */
+
+.spinner-small {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  border-top-color: var(--text-dark);
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===========================
+   VALIDACIÓN DE FORMULARIOS
+   =========================== */
+
+.form-control.is-invalid {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.invalid-feedback {
+  display: block;
+  color: #dc3545;
+  font-size: 13px;
+  margin-top: 5px;
+}
+
+/* ===========================
+   CARRITO
+   =========================== */
+
+.carro {
+  color: var(--text-dark);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===========================
+   ANIMACIONES
+   =========================== */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-card {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* ===========================
+   HEADER ESTILOS
+   =========================== */
+
+.navbar-custom {
+  background-color: var(--white);
+  padding: 15px 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navbar-brand-icon {
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--text-dark);
+  background: none;
+  border: none;
+  padding: 0;
+  margin-right: 15px;
+}
+
+.navbar-brand-icon:hover {
+  opacity: 0.7;
+}
+
+.search-container {
+  flex: 1;
+  max-width: none;
+  margin: 0 15px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 20px;
+  border: none;
+  border-radius: var(--input-radius);
+  background-color: var(--primary-color);
+  color: var(--text-dark);
+  font-size: 14px;
+}
+
+.search-input::placeholder {
+  color: var(--text-light);
+}
+
+.search-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(238, 208, 157, 0.5);
+}
+
+.navbar-icons {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text-dark);
+  transition: transform 0.3s ease;
+  padding: 0;
+}
+
+.icon-btn:hover {
+  transform: scale(1.1);
+}
+
+/* ===========================
+   SIDEBAR MENU
+   =========================== */
+
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 199;
+  display: none;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.active {
+  display: block;
+  opacity: 1;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -300px;
+  width: 250px;
+  height: 100vh;
+  background-color: #d9d9d9;
+  padding: 30px 20px;
+  z-index: 200;
+  transition: left 0.3s ease;
+  overflow-y: auto;
+}
+
+.sidebar.active {
+  left: 0;
+}
+
+.sidebar-close {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  margin-bottom: 30px;
+}
+
+.sidebar.active .sidebar-close {
+  display: block;
+}
+
+.sidebar-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-menu li {
+  padding: 0;
+  margin: 0 0 20px 0;
+}
+
+.sidebar-menu a {
+  color: var(--text-dark);
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 600;
+  display: block;
+  padding: 12px 15px;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.sidebar-menu a:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* ===========================
+   DROPDOWN PERFIL
+   =========================== */
+
+.profile-dropdown {
+  position: relative;
+}
+
+.profile-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: var(--white);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 180px;
+  margin-top: 10px;
+  z-index: 300;
+  display: none;
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.profile-menu.active {
+  display: block;
+}
+
+.profile-menu a {
+  display: block;
+  padding: 15px 20px;
+  color: var(--text-dark);
+  text-decoration: none;
+  font-weight: 500;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.3s ease;
+}
+
+.profile-menu a:last-child {
+  border-bottom: none;
+}
+
+.profile-menu a:hover {
+  background-color: var(--primary-color);
+}
+
+/* ===========================
+   FOOTER ESTILOS
+   =========================== */
+
+.footer-custom {
+  background-color: var(--primary-color);
+  padding: 30px 20px;
+  margin-top: auto;
+  width: 100%;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.footer-link {
+  color: var(--text-dark);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  transition: text-decoration 0.3s ease;
+}
+
+.footer-link:hover {
+  text-decoration: underline;
+}
+
+.footer-social {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.social-icon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: var(--text-dark);
+  text-decoration: none;
+  transition: transform 0.3s ease;
+}
+
+.social-icon:hover {
+  transform: scale(1.2);
+}
+
+/* ===========================
+   CONTENIDO PRINCIPAL
+   =========================== */
+
+.main-content {
+  padding: 40px 30px;
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.content-section {
+  width: 100%;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 30px;
+  align-items: center;
+  justify-items: stretch;
+  flex: 1;
+}
+
+.placeholder-box {
+  background-color: #b3b3b3;
+  border-radius: 8px;
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--text-dark);
+  font-size: 14px;
+  min-height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.content-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-light);
+  text-align: justify;
+}
+
+/* ===========================
+   WELCOME BANNER ADMIN
+   =========================== */
+
+.welcome-banner-admin {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  border-radius: var(--input-radius);
+  padding: 40px;
+  text-align: center;
+  margin-bottom: 40px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.welcome-title {
+  font-size: 2.5em;
+  font-weight: 900;
+  margin-bottom: 10px;
+  color: var(--text-dark);
+}
+
+.welcome-subtitle {
+  font-size: 1.1em;
+  color: var(--text-light);
+  margin: 0;
+}
+
+/* ===========================
+   AD BANNER
+   =========================== */
+
+.ad-banner {
+  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+  border-radius: var(--input-radius);
+  padding: 60px 30px;
+  text-align: center;
+  grid-column: 1 / -1;
+}
+
+.ad-banner h2 {
+  font-size: 1.8em;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+
+
+/* ===========================
+   RESPONSIVE LAYOUT
+   =========================== */
+
+@media (max-width: 1024px) {
+  .content-section {
+    grid-template-columns: 1fr;
+  }
+
+  .search-container {
+    max-width: 100%;
+    margin: 0 10px;
+  }
+
+  .footer-content {
+    justify-content: center;
+  }
+
+  .main-content {
+    padding: 25px 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar-custom {
+    padding: 12px 10px;
+  }
+
+  .search-container {
+    max-width: 100%;
+    margin: 0;
+    flex: 1;
+  }
+
+  .navbar-icons {
+    gap: 12px;
+  }
+
+  .icon-btn {
+    font-size: 18px;
+  }
+
+  .sidebar {
+    width: 200px;
+    left: -200px;
+  }
+
+  .footer-content {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .footer-link {
+    font-size: 13px;
+  }
+
+  .content-section {
+    gap: 20px;
+    padding: 0;
+  }
+
+  .placeholder-box {
+    min-height: 200px;
+    padding: 30px 15px;
+  }
+
+  .main-content {
+    padding: 25px 15px;
+  }
+
+  .welcome-title {
+    font-size: 2em;
+  }
+
+  .welcome-subtitle {
+    font-size: 1em;
+  }
+
+  .welcome-banner-admin {
+    padding: 30px 20px;
+  }
+
+  .ad-banner {
+    padding: 40px 20px;
+  }
+
+  .ad-banner h2 {
+    font-size: 1.5em;
+  }
+}
+
+@media (max-width: 576px) {
+  .navbar-custom {
+    padding: 10px;
+  }
+
+  .search-input {
+    padding: 10px 15px;
+    font-size: 13px;
+  }
+
+  .search-container {
+    margin: 0;
+  }
+
+  .navbar-icons {
+    gap: 8px;
+  }
+
+  .icon-btn {
+    font-size: 16px;
+  }
+
+  .sidebar {
+    width: 100%;
+    left: -100%;
+  }
+
+  .content-section {
+    gap: 15px;
+  }
+
+  .placeholder-box {
+    min-height: 180px;
+    padding: 20px 10px;
+    font-size: 12px;
+  }
+
+  .content-text {
+    font-size: 13px;
+  }
+
+  .footer-link {
+    font-size: 12px;
+  }
+
+  .social-icon {
+    font-size: 16px;
+    width: 24px;
+    height: 24px;
+  }
+
+  .main-content {
+    padding: 20px 12px;
+  }
+
+  .welcome-title {
+    font-size: 1.6em;
+  }
+
+  .welcome-subtitle {
+    font-size: 0.9em;
+  }
+
+  .welcome-banner-admin {
+    padding: 25px 15px;
+  }
+
+  .ad-banner {
+    padding: 30px 15px;
+  }
+
+  .ad-banner h2 {
+    font-size: 1.3em;
+  }
+}

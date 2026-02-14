@@ -13,6 +13,11 @@ return new class extends Migration
     {
         Schema::create('incidencias', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('usuario_id')->constrained('users')->onDelete('cascade');
+            $table->string('asunto', 255);
+            $table->text('descripcion');
+            $table->string('estado', 50)->default('abierta'); // abierta, en_proceso, resuelta, cerrada
+            $table->string('prioridad', 50)->default('media'); // baja, media, alta
             $table->timestamps();
         });
     }

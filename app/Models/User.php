@@ -21,8 +21,15 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'apellidos',
         'email',
         'password',
+        'telefono',
+        'direccion',
+        'avatar',
+        'fecha_nacimiento',
+        'ciudad',
+        'codigo_postal',
     ];
 
     /**
@@ -60,5 +67,29 @@ class User extends Authenticatable
             ->take(2)
             ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
+    }
+
+    /**
+     * Relación N:M con roles
+     */
+    public function roles()
+    {
+        return $this->belongsToMany(Rol::class, 'role_user', 'user_id', 'role_id');
+    }
+
+    /**
+     * Verificar si el usuario tiene un rol específico
+     */
+    public function hasRole($role)
+    {
+        return $this->roles()->where('nombre', $role)->exists();
+    }
+
+    /**
+     * Verificar si el usuario tiene alguno de los roles
+     */
+    public function hasAnyRole($roles)
+    {
+        return $this->roles()->whereIn('nombre', $roles)->exists();
     }
 }

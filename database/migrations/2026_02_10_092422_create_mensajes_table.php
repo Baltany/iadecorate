@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('mensajes', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('usuario_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('destinatario_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->text('mensaje');
+            $table->boolean('leido')->default(false);
             $table->timestamps();
         });
     }

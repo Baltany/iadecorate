@@ -38,6 +38,19 @@ class FortifyServiceProvider extends ServiceProvider
     {
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::createUsersUsing(CreateNewUser::class);
+
+        // Redirigir según el rol después del login
+        Fortify::redirects('login', function () {
+            if (auth()->user()->hasRole('admin')) {
+                return route('admin.main');
+            }
+            return route('catalogo');
+        });
+
+        // Redirigir al catálogo después del logout
+        Fortify::redirects('logout', function () {
+            return route('catalogo');
+        });
     }
 
     /**
