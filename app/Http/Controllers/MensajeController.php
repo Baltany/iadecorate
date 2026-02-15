@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Mensaje;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,13 +14,21 @@ class MensajeController extends Controller
      */
     public function index()
     {
+        // Obtener todos los usuarios excepto el actual y los administradores
+        $usuarios = User::whereDoesntHave('roles', function ($query) {
+            $query->where('nombre', 'administrador');
+        })
+        ->where('id', '!=', Auth::id())
+        ->orderBy('name', 'asc')
+        ->get();
+
         // Obtener mensajes del usuario (conversaciones con admin o soporte)
         $mensajes = Mensaje::where('usuario_id', Auth::id())
             ->orWhere('destinatario_id', Auth::id())
             ->orderBy('created_at', 'asc')
             ->get();
 
-        return view('mensajeria', compact('mensajes'));
+        return view('mensajeria', compact('mensajes', 'usuarios'));
     }
 
     /**

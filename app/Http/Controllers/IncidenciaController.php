@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Incidencia;
+use App\Models\PreguntaFrecuente;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,7 +18,11 @@ class IncidenciaController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('incidencias', compact('incidencias'));
+        $preguntasFrecuentes = PreguntaFrecuente::where('activa', true)
+            ->orderBy('orden')
+            ->get();
+
+        return view('incidencias', compact('incidencias', 'preguntasFrecuentes'));
     }
 
     /**

@@ -6,24 +6,26 @@
         </button>
 
         <!-- Barra de Búsqueda -->
-        <div class="search-container d-none d-sm-block">
+        <form action="{{ route('catalogo') }}" method="GET" class="search-container d-none d-sm-block" id="searchFormDesktop">
             <input
                 type="text"
                 class="search-input"
                 placeholder="Busque aquí"
                 id="searchInput"
+                name="buscar"
+                value="{{ request('buscar') }}"
             >
-        </div>
+        </form>
 
         <!-- Iconos de la derecha -->
         <div class="navbar-icons">
             <!-- Búsqueda móvil -->
-            <button class="icon-btn d-sm-none" title="Buscar">
+            <button type="button" class="icon-btn d-sm-none" title="Buscar" onclick="document.getElementById('searchFormMobile').submit()">
                 <i class="fas fa-search"></i>
             </button>
 
             <!-- Icono Búsqueda (desktop) -->
-            <button class="icon-btn d-none d-sm-block" title="Buscar">
+            <button type="button" class="icon-btn d-none d-sm-block" title="Buscar" onclick="document.getElementById('searchFormDesktop').submit()">
                 <i class="fas fa-search"></i>
             </button>
 
@@ -66,11 +68,14 @@
     </div>
 
     <!-- Barra de búsqueda móvil -->
-    <div class="search-container d-sm-none mt-2">
+    <form action="{{ route('catalogo') }}" method="GET" class="search-container d-sm-none mt-2" id="searchFormMobile">
         <input
             type="text"
             class="search-input"
             placeholder="Busque aquí"
+            id="searchInputMobile"
+            name="buscar"
+            value="{{ request('buscar') }}"
         >
-    </div>
+    </form>
 </header>

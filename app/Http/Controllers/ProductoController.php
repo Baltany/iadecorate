@@ -11,10 +11,21 @@ class ProductoController extends Controller
     /**
      * Mostrar el catálogo de productos (PÚBLICO)
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Obtener todos los productos de la base de datos
-        $productos = Producto::all();
+        // Obtener todos los productos o filtrados por búsqueda
+        $query = Producto::query();
+
+        // Si hay un término de búsqueda
+        if ($request->has('buscar') && !empty($request->buscar)) {
+            $buscar = $request->buscar;
+            $query->where(function($q) use ($buscar) {
+                $q->where('nombre', 'LIKE', '%' . $buscar . '%')
+                  ->orWhere('descripcion', 'LIKE', '%' . $buscar . '%');
+            });
+        }
+
+        $productos = $query->get();
 
         return view('catalogo', compact('productos'));
     }

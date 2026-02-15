@@ -4,14 +4,21 @@
 
 @push('styles')
 <style>
+    .main-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: calc(100vh - 200px);
+      padding: 40px;
+    }
+
     .product-container {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 40px;
       width: 100%;
-      flex: 1;
+      max-width: 1400px;
       align-items: center;
-      padding: 40px;
     }
 
     .product-image-section {

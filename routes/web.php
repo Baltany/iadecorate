@@ -13,9 +13,9 @@ use App\Http\Controllers\AdminController;
 // RUTAS PÚBLICAS (Sin autenticación)
 // ==========================================
 
-// Página principal - Puede ser index o catálogo
+// Página principal - Inicio (index)
 Route::get('/', function () {
-    return redirect()->route('catalogo'); // Redirige al catálogo como página principal
+    return view('index');
 })->name('home');
 
 // Catálogo - Público, cualquiera puede ver productos

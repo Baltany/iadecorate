@@ -6,6 +6,7 @@ use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -41,15 +42,16 @@ class FortifyServiceProvider extends ServiceProvider
 
         // Redirigir según el rol después del login
         Fortify::redirects('login', function () {
-            if (auth()->user()->hasRole('admin')) {
+            $user = Auth::user();
+            if ($user && $user->hasRole('admin')) {
                 return route('admin.main');
             }
-            return route('catalogo');
+            return route('home');
         });
 
-        // Redirigir al catálogo después del logout
+        // Redirigir a la página principal después del logout
         Fortify::redirects('logout', function () {
-            return route('catalogo');
+            return route('home');
         });
     }
 

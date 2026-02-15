@@ -17,7 +17,7 @@
       display: flex;
       flex-direction: row;
       gap: 20px;
-      justify-content: flex-start;
+      justify-content: center;
       align-items: center;
       padding: 40px;
     }
@@ -52,7 +52,7 @@
       background-color: #999999;
       border-radius: 12px;
       width: 100%;
-      height: 90%;
+      height: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -70,6 +70,7 @@
 
       .viewer-3d {
         margin: 0 40px 0 40px;
+        min-height: 400px;
       }
     }
 
@@ -94,6 +95,7 @@
 
       .viewer-3d {
         margin: 0 30px 0 30px;
+        min-height: 350px;
       }
     }
 
@@ -106,10 +108,13 @@
         gap: 10px;
         flex-wrap: wrap;
         padding: 20px;
+        justify-content: center;
       }
 
       .upload-text {
         font-size: 13px;
+        width: 100%;
+        text-align: center;
       }
 
       .upload-button {
@@ -120,6 +125,7 @@
       .viewer-3d {
         font-size: 14px;
         margin: 0 20px 0 20px;
+        min-height: 300px;
       }
     }
 </style>
@@ -152,8 +158,7 @@
         const file = e.target.files[0];
         if (file) {
             console.log('Archivo seleccionado:', file.name);
-            // Aquí puedes agregar la lógica para procesar el archivo 3D
-            // Por ejemplo, usar Three.js para renderizar el modelo
+            // Aquí se procesaría el archivo 3D
         }
     });
 </script>
