@@ -12,7 +12,7 @@ class MensajeController extends Controller
     /**
      * Mostrar mensajería del usuario
      */
-    public function index()
+    public function index(Request $request)
     {
         // Obtener todos los usuarios excepto el actual y los administradores
         $usuarios = User::whereDoesntHave('roles', function ($query) {
@@ -22,13 +22,24 @@ class MensajeController extends Controller
         ->orderBy('name', 'asc')
         ->get();
 
-        // Obtener mensajes del usuario (conversaciones con admin o soporte)
-        $mensajes = Mensaje::where('usuario_id', Auth::id())
-            ->orWhere('destinatario_id', Auth::id())
+        // Obtener el destinatario seleccionado (si hay)
+        $destinatarioId = $request->get('destinatario_id', $usuarios->first()->id ?? null);
+
+        // Obtener mensajes SOLO de la conversación entre estos dos usuarios
+        $mensajes = collect();
+        if ($destinatarioId) {
+            $mensajes = Mensaje::where(function($query) use ($destinatarioId) {
+                $query->where('usuario_id', Auth::id())
+                      ->where('destinatario_id', $destinatarioId);
+            })->orWhere(function($query) use ($destinatarioId) {
+                $query->where('usuario_id', $destinatarioId)
+                      ->where('destinatario_id', Auth::id());
+            })
             ->orderBy('created_at', 'asc')
             ->get();
+        }
 
-        return view('mensajeria', compact('mensajes', 'usuarios'));
+        return view('mensajeria', compact('mensajes', 'usuarios', 'destinatarioId'));
     }
 
     /**
@@ -38,15 +49,16 @@ class MensajeController extends Controller
     {
         $validated = $request->validate([
             'mensaje' => 'required|string|max:1000',
-            'destinatario_id' => 'nullable|exists:users,id',
+            'destinatario_id' => 'required|exists:users,id',
         ]);
 
         Mensaje::create([
             'usuario_id' => Auth::id(),
-            'destinatario_id' => $validated['destinatario_id'] ?? 1, // 1 = Admin por defecto
+            'destinatario_id' => $validated['destinatario_id'],
             'mensaje' => $validated['mensaje'],
         ]);
 
-        return redirect()->route('mensajeria')->with('success', 'Mensaje enviado');
+        return redirect()->route('mensajeria', ['destinatario_id' => $validated['destinatario_id']])
+            ->with('success', 'Mensaje enviado');
     }
 }

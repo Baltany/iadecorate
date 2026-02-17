@@ -365,36 +365,22 @@
       <div class="chat-input-section">
         <!-- Selector de Preguntas Frecuentes -->
         @if(isset($preguntasFrecuentes) && count($preguntasFrecuentes) > 0)
-        <select class="faq-selector" id="faqSelector">
-          <option value="">Selecciona una pregunta frecuente...</option>
-          @foreach($preguntasFrecuentes as $faq)
-            <option value="{{ $faq->id }}" data-respuesta="{{ $faq->respuesta }}">{{ $faq->pregunta }}</option>
-          @endforeach
-        </select>
+        <div style="text-align: center; margin-bottom: 15px;">
+          <p style="color: var(--text-dark); font-weight: 600; margin-bottom: 10px;">
+            <i class="fas fa-info-circle"></i> Selecciona una pregunta frecuente:
+          </p>
+          <select class="faq-selector" id="faqSelector">
+            <option value="">¿En qué podemos ayudarte?</option>
+            @foreach($preguntasFrecuentes as $faq)
+              <option value="{{ $faq->id }}" data-pregunta="{{ $faq->pregunta }}" data-respuesta="{{ $faq->respuesta }}">{{ $faq->pregunta }}</option>
+            @endforeach
+          </select>
+        </div>
+        @else
+        <div style="text-align: center; padding: 20px;">
+          <p style="color: var(--text-dark);">No hay preguntas frecuentes disponibles en este momento.</p>
+        </div>
         @endif
-
-        <form method="POST" action="{{ route('incidencias.crear') }}" id="incidenciaForm">
-            @csrf
-            <div class="chat-input-wrapper">
-              <div class="chat-input-actions">
-                <button type="button" class="chat-action-btn" id="attachBtn" title="Adjuntar archivo">
-                  <i class="fas fa-paperclip"></i>
-                </button>
-              </div>
-              <input
-                type="text"
-                class="chat-input"
-                id="messageInput"
-                name="descripcion"
-                placeholder="Escriba su pregunta aquí"
-                required
-              >
-              <input type="hidden" name="asunto" value="Pregunta desde incidencias">
-              <button type="submit" class="chat-send-btn" id="sendBtn" title="Enviar mensaje">
-                <i class="fas fa-paper-plane"></i>
-              </button>
-            </div>
-        </form>
       </div>
     </div>
 </main>
@@ -404,18 +390,19 @@
 <script>
     window.addEventListener('load', function() {
       const chatMessages = document.getElementById('chatMessages');
-      chatMessages.scrollTop = chatMessages.scrollHeight;
+      if (chatMessages) {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
     });
 
     // Selector de preguntas frecuentes
     const faqSelector = document.getElementById('faqSelector');
-    const messageInput = document.getElementById('messageInput');
     const chatMessagesDiv = document.getElementById('chatMessages');
 
     if (faqSelector) {
       faqSelector.addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
-        const pregunta = selectedOption.text;
+        const pregunta = selectedOption.getAttribute('data-pregunta');
         const respuesta = selectedOption.getAttribute('data-respuesta');
 
         if (this.value && pregunta && respuesta) {
@@ -429,6 +416,9 @@
             </div>
           `;
           chatMessagesDiv.appendChild(userMessageGroup);
+
+          // Scroll al final
+          chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
 
           // Agregar respuesta automática
           setTimeout(() => {
@@ -447,10 +437,7 @@
 
             // Scroll al final
             chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
-          }, 500);
-
-          // Scroll al final
-          chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+          }, 800);
 
           // Reset selector
           this.value = '';

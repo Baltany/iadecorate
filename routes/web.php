@@ -8,6 +8,7 @@ use App\Http\Controllers\MensajeController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\IncidenciaController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ChatController;
 
 // ==========================================
 // RUTAS PÚBLICAS (Sin autenticación)
@@ -61,6 +62,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/incidencias', [IncidenciaController::class, 'index'])->name('incidencias');
     Route::post('/incidencias/crear', [IncidenciaController::class, 'crear'])->name('incidencias.crear');
 
+    // Chat anónimo - Solo usuarios logueados
+    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+    Route::get('/chat/anonimo', [ChatController::class, 'obtenerOCrearChatAnonimo'])->name('chat.anonimo');
+    Route::get('/chat/{chat}', [ChatController::class, 'show'])->name('chat.show');
+    Route::post('/chat/{chat}/mensaje', [ChatController::class, 'enviarMensaje'])->name('chat.mensaje');
+
     // Entorno 3D - Solo usuarios logueados
     Route::get('/entorno', function () {
         return view('entorno'); // Vista del entorno 3D
@@ -96,6 +103,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/productos/{id}/editar', [ProductoController::class, 'edit'])->name('productos.edit');
     Route::put('/productos/{id}', [ProductoController::class, 'update'])->name('productos.update');
     Route::delete('/productos/{id}', [ProductoController::class, 'destroy'])->name('productos.destroy');
+
+    // Gestión de chats (solo admin)
+    Route::post('/chat/crear', [ChatController::class, 'crearChatConUsuario'])->name('chat.crear');
+    Route::delete('/chat/{chat}', [ChatController::class, 'eliminar'])->name('chat.eliminar');
 });
 
 // Ruta del dashboard (Flux - para compatibilidad)

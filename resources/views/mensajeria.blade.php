@@ -398,13 +398,15 @@
       <div class="conversations-list" id="conversationsList">
         @if(isset($usuarios) && count($usuarios) > 0)
             @foreach($usuarios as $usuario)
-            <div class="conversation-item @if($loop->first) active @endif" data-user-id="{{ $usuario->id }}">
+            <a href="{{ route('mensajeria', ['destinatario_id' => $usuario->id]) }}"
+               class="conversation-item @if(isset($destinatarioId) && $destinatarioId == $usuario->id) active @elseif(!isset($destinatarioId) && $loop->first) active @endif"
+               data-user-id="{{ $usuario->id }}">
               <div class="conversation-avatar">{{ strtoupper(substr($usuario->name, 0, 1)) }}</div>
               <div class="conversation-info">
                 <div class="conversation-name">{{ $usuario->name }}</div>
-                <div class="conversation-preview">Mensaje nuevo</div>
+                <div class="conversation-preview">Ver conversación</div>
               </div>
-            </div>
+            </a>
             @endforeach
         @else
             <div class="conversation-item active">
@@ -420,8 +422,23 @@
       <!-- ÁREA DE CHAT -->
       <div class="chat-area">
         <div class="chat-header">
-          <div class="chat-header-avatar">👤</div>
-          <h3 class="chat-header-name" id="chatHeaderName">Selecciona una conversación</h3>
+          <div class="chat-header-avatar">
+            @if(isset($destinatarioId))
+              @php
+                $destinatario = $usuarios->firstWhere('id', $destinatarioId);
+              @endphp
+              {{ $destinatario ? strtoupper(substr($destinatario->name, 0, 1)) : '👤' }}
+            @else
+              👤
+            @endif
+          </div>
+          <h3 class="chat-header-name" id="chatHeaderName">
+            @if(isset($destinatarioId))
+              {{ $destinatario->name ?? 'Usuario' }}
+            @else
+              Selecciona una conversación
+            @endif
+          </h3>
         </div>
 
         <div class="chat-messages" id="chatMessages">
@@ -454,8 +471,8 @@
                   <i class="fas fa-paperclip"></i>
                 </button>
                 <input type="text" class="chat-input" id="messageInput" name="mensaje" placeholder="Escriba su mensaje aquí" required>
-                <input type="hidden" name="receptor_id" id="receptorId" value="">
-                <button type="submit" class="chat-send-btn" id="sendBtn" title="Enviar mensaje">
+                <input type="hidden" name="destinatario_id" value="{{ $destinatarioId ?? '' }}">
+                <button type="submit" class="chat-send-btn" id="sendBtn" title="Enviar mensaje" @if(!isset($destinatarioId)) disabled @endif>
                   <i class="fas fa-paper-plane"></i>
                 </button>
               </div>
@@ -468,39 +485,12 @@
 
 @push('scripts')
 <script>
-    // CONVERSACIONES
-    const conversationItems = document.querySelectorAll('.conversation-item');
-    const chatHeaderName = document.getElementById('chatHeaderName');
-    const receptorId = document.getElementById('receptorId');
-
-    conversationItems.forEach(item => {
-      item.addEventListener('click', () => {
-        conversationItems.forEach(conv => conv.classList.remove('active'));
-        item.classList.add('active');
-
-        const userName = item.querySelector('.conversation-name').textContent;
-        const userId = item.getAttribute('data-user-id');
-
-        chatHeaderName.textContent = userName;
-        if (userId) {
-          receptorId.value = userId;
-        }
-      });
-    });
-
-    // Set first user as default
-    if (conversationItems.length > 0) {
-      const firstItem = conversationItems[0];
-      const userId = firstItem.getAttribute('data-user-id');
-      if (userId) {
-        receptorId.value = userId;
-      }
-    }
-
-    // Scroll al final
+    // Scroll al final al cargar
     window.addEventListener('load', () => {
       const chatMessages = document.getElementById('chatMessages');
-      chatMessages.scrollTop = chatMessages.scrollHeight;
+      if (chatMessages) {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
     });
 </script>
 @endpush

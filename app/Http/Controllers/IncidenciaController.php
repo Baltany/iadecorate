@@ -26,25 +26,26 @@ class IncidenciaController extends Controller
     }
 
     /**
-     * Crear una nueva incidencia
+     * Crear una nueva incidencia desde pregunta frecuente
      */
     public function crear(Request $request)
     {
         $validated = $request->validate([
-            'asunto' => 'required|string|max:255',
-            'descripcion' => 'required|string',
-            'prioridad' => 'nullable|in:baja,media,alta',
+            'pregunta_id' => 'required|exists:preguntas_frecuentes,id',
         ]);
+
+        $pregunta = PreguntaFrecuente::findOrFail($validated['pregunta_id']);
 
         Incidencia::create([
             'usuario_id' => Auth::id(),
-            'asunto' => $validated['asunto'],
-            'descripcion' => $validated['descripcion'],
-            'prioridad' => $validated['prioridad'] ?? 'media',
-            'estado' => 'abierta',
+            'asunto' => $pregunta->pregunta,
+            'descripcion' => $pregunta->pregunta,
+            'respuesta' => $pregunta->respuesta,
+            'prioridad' => 'baja',
+            'estado' => 'resuelta',
         ]);
 
-        return redirect()->route('incidencias')->with('success', 'Incidencia creada exitosamente');
+        return redirect()->route('incidencias')->with('success', 'Consulta registrada');
     }
 
     /**
