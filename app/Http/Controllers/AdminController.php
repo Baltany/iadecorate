@@ -8,6 +8,7 @@ use App\Models\Producto;
 use App\Models\Pedido;
 use App\Models\Incidencia;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 
@@ -175,7 +176,7 @@ class AdminController extends Controller
     public function eliminarUsuario(User $usuario)
     {
         // Evitar que el admin se elimine a sí mismo
-        if ($usuario->id === auth()->user()->id) {
+        if ($usuario->id === Auth::user()->id) {
             return redirect()->route('admin.usuarios')->with('error', 'No puedes eliminarte a ti mismo');
         }
 

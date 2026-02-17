@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class CarritoRequest extends FormRequest
 {
@@ -11,7 +12,7 @@ class CarritoRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return Auth::check();
     }
 
     /**
@@ -22,7 +23,23 @@ class CarritoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'producto_id' => 'required|exists:productos,id',
+            'cantidad' => 'required|integer|min:1|max:100'
+        ];
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     */
+    public function messages(): array
+    {
+        return [
+            'producto_id.required' => 'Debes seleccionar un producto',
+            'producto_id.exists' => 'El producto seleccionado no existe',
+            'cantidad.required' => 'La cantidad es obligatoria',
+            'cantidad.integer' => 'La cantidad debe ser un número entero',
+            'cantidad.min' => 'La cantidad mínima es 1',
+            'cantidad.max' => 'La cantidad máxima es 100'
         ];
     }
 }
