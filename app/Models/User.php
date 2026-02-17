@@ -92,39 +92,4 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->roles()->whereIn('nombre', $roles)->exists();
     }
-
-    /**
-     * Chats donde el usuario es participante 1
-     */
-    public function chatsComoUsuario1()
-    {
-        return $this->hasMany(Chat::class, 'usuario1_id');
-    }
-
-    /**
-     * Chats donde el usuario es participante 2
-     */
-    public function chatsComoUsuario2()
-    {
-        return $this->hasMany(Chat::class, 'usuario2_id');
-    }
-
-    /**
-     * Todos los chats del usuario
-     */
-    public function chats()
-    {
-        return Chat::where('usuario1_id', $this->id)
-            ->orWhere('usuario2_id', $this->id)
-            ->orderBy('ultimo_mensaje_at', 'desc')
-            ->get();
-    }
-
-    /**
-     * Mensajes de chat enviados por el usuario
-     */
-    public function chatMensajes()
-    {
-        return $this->hasMany(ChatMensaje::class, 'usuario_id');
-    }
 }
