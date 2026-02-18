@@ -246,7 +246,7 @@
               <td>{{ $producto->id }}</td>
               <td>
                 @if($producto->imagen)
-                  <img src="{{ asset('storage/' . $producto->imagen) }}" alt="{{ $producto->nombre }}" class="producto-imagen">
+                  <img src="{{ asset($producto->imagen) }}" alt="{{ $producto->nombre }}" class="producto-imagen">
                 @else
                   <i class="fas fa-image fa-3x" style="color: #ccc;"></i>
                 @endif

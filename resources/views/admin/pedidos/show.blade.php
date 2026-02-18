@@ -238,7 +238,7 @@
         @foreach($pedido->detalles as $detalle)
         <div class="producto-detalle">
           @if($detalle->producto->imagen)
-            <img src="{{ asset('storage/' . $detalle->producto->imagen) }}" alt="{{ $detalle->producto->nombre }}" class="producto-imagen">
+            <img src="{{ asset($detalle->producto->imagen) }}" alt="{{ $detalle->producto->nombre }}" class="producto-imagen">
           @else
             <div style="width: 80px; height: 80px; background-color: #f0f0f0; border-radius: 5px; display: flex; align-items: center; justify-content: center; margin-right: 20px;">
               <i class="fas fa-image fa-2x" style="color: #ccc;"></i>

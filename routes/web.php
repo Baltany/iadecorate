@@ -56,6 +56,8 @@ Route::middleware(['auth'])->group(function () {
     // Mensajería - Solo usuarios logueados
     Route::get('/mensajeria', [MensajeController::class, 'index'])->name('mensajeria');
     Route::post('/mensajeria/enviar', [MensajeController::class, 'enviar'])->name('mensajeria.enviar');
+    Route::get('/mensajeria/obtener-nuevos', [MensajeController::class, 'obtenerNuevos'])->name('mensajeria.obtener-nuevos');
+    Route::get('/mensajeria/conteo-no-leidos', [MensajeController::class, 'conteoNoLeidos'])->name('mensajeria.conteo-no-leidos');
 
     // Incidencias - Solo usuarios logueados
     Route::get('/incidencias', [IncidenciaController::class, 'index'])->name('incidencias');

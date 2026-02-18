@@ -246,10 +246,10 @@
             @csrf
 
             <!-- Token del link -->
-            <input type="hidden" name="token" value="{{ $request->route('token') }}">
+            <input type="hidden" name="token" value="{{ request()->route('token') }}">
 
             <!-- Email (oculto pero requerido) -->
-            <input type="hidden" name="email" value="{{ $request->email }}">
+            <input type="hidden" name="email" value="{{ request('email') }}">
 
             <!-- Email mostrado -->
             <div class="form-group">
@@ -258,7 +258,7 @@
                     type="email"
                     class="form-control"
                     id="email_display"
-                    value="{{ $request->email }}"
+                    value="{{ request('email') }}"
                     disabled
                     style="background-color: #f5f5f5; cursor: not-allowed;"
                 >

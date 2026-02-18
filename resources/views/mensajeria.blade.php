@@ -209,6 +209,23 @@
       color: var(--text-dark);
     }
 
+    /* Estilos especiales para mensajes del administrador */
+    .message-group.admin .message-avatar {
+      background-color: #7c3aed;
+    }
+
+    .message-group.admin .message-text {
+      background-color: #7c3aed;
+      color: var(--white);
+    }
+
+    /* Si el admin es el usuario actual, mantener estilo de usuario pero con borde distintivo */
+    .message-group.user.admin .message-text {
+      background-color: var(--primary-color);
+      color: var(--text-dark);
+      border: 2px solid #7c3aed;
+    }
+
     .chat-messages::-webkit-scrollbar {
       width: 5px;
     }
@@ -444,11 +461,24 @@
         <div class="chat-messages" id="chatMessages">
           @if(isset($mensajes) && count($mensajes) > 0)
               @foreach($mensajes as $mensaje)
-              <div class="message-group @if($mensaje->usuario_id == auth()->id()) user @endif">
-                @if($mensaje->usuario_id != auth()->id())
+              @php
+                $isUser = $mensaje->usuario_id == auth()->id();
+                $isAdmin = $mensaje->usuario->roles->contains('nombre', 'admin');
+                $messageClasses = 'message-group';
+                if ($isUser) $messageClasses .= ' user';
+                if ($isAdmin) $messageClasses .= ' admin';
+              @endphp
+              <div class="{{ $messageClasses }}">
+                @if(!$isUser)
                 <div class="message-avatar">{{ strtoupper(substr($mensaje->usuario->name ?? 'U', 0, 1)) }}</div>
                 @endif
                 <div class="message-content">
+                  @if($isAdmin)
+                  <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
+                    <span style="font-size: 11px; font-weight: 600; color: #666;">{{ $mensaje->usuario->name }}</span>
+                    <span style="background: #7c3aed; color: white; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 600;">ADMIN</span>
+                  </div>
+                  @endif
                   <div class="message-text">{{ $mensaje->mensaje }}</div>
                 </div>
               </div>
@@ -464,14 +494,14 @@
         </div>
 
         <div class="chat-input-section">
-          <form method="POST" action="{{ route('mensajeria.enviar') }}">
+          <form method="POST" action="{{ route('mensajeria.enviar') }}" id="formEnviarMensaje">
               @csrf
               <div class="chat-input-wrapper">
                 <button type="button" class="chat-action-btn" id="attachBtn" title="Adjuntar archivo">
                   <i class="fas fa-paperclip"></i>
                 </button>
-                <input type="text" class="chat-input" id="messageInput" name="mensaje" placeholder="Escriba su mensaje aquí" required>
-                <input type="hidden" name="destinatario_id" value="{{ $destinatarioId ?? '' }}">
+                <input type="text" class="chat-input" id="messageInput" name="mensaje" placeholder="Escriba su mensaje aquí" required autocomplete="off">
+                <input type="hidden" name="destinatario_id" id="destinatarioIdInput" value="{{ $destinatarioId ?? '' }}">
                 <button type="submit" class="chat-send-btn" id="sendBtn" title="Enviar mensaje" @if(!isset($destinatarioId)) disabled @endif>
                   <i class="fas fa-paper-plane"></i>
                 </button>
@@ -485,11 +515,320 @@
 
 @push('scripts')
 <script>
-    // Scroll al final al cargar
-    window.addEventListener('load', () => {
+    // Variables globales
+    let ultimoMensajeId = {{ $mensajes->last()->id ?? 0 }};
+    let destinatarioId = {{ $destinatarioId ?? 'null' }};
+    let pollingInterval;
+    let notificationTimeout;
+
+    // Función para scroll al final
+    function scrollToBottom() {
       const chatMessages = document.getElementById('chatMessages');
       if (chatMessages) {
         chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+    }
+
+    // Función para crear el HTML de un mensaje
+    function crearMensajeHTML(mensaje) {
+      const messageClasses = ['message-group'];
+      if (mensaje.es_usuario_actual) messageClasses.push('user');
+      if (mensaje.es_admin) messageClasses.push('admin');
+
+      let avatarHTML = '';
+      if (!mensaje.es_usuario_actual) {
+        avatarHTML = `<div class="message-avatar">${mensaje.usuario_inicial}</div>`;
+      }
+
+      let adminBadge = '';
+      if (mensaje.es_admin) {
+        adminBadge = `
+          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
+            <span style="font-size: 11px; font-weight: 600; color: #666;">${mensaje.usuario_nombre}</span>
+            <span style="background: #7c3aed; color: white; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 600;">ADMIN</span>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="${messageClasses.join(' ')}">
+          ${avatarHTML}
+          <div class="message-content">
+            ${adminBadge}
+            <div class="message-text">${mensaje.mensaje}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Función para mostrar notificación del navegador
+    function mostrarNotificacion(mensaje) {
+      if (!("Notification" in window)) {
+        return;
+      }
+
+      if (Notification.permission === "granted") {
+        const titulo = mensaje.es_admin
+          ? `Nuevo mensaje de ${mensaje.usuario_nombre} (ADMIN)`
+          : `Nuevo mensaje de ${mensaje.usuario_nombre}`;
+
+        const notification = new Notification(titulo, {
+          body: mensaje.mensaje,
+          icon: "{{ asset('img/logo.png') }}",
+          badge: "{{ asset('img/logo.png') }}"
+        });
+
+        notification.onclick = function() {
+          window.focus();
+          notification.close();
+        };
+      } else if (Notification.permission !== "denied") {
+        Notification.requestPermission().then(permission => {
+          if (permission === "granted") {
+            mostrarNotificacion(mensaje);
+          }
+        });
+      }
+    }
+
+    // Función para mostrar notificación visual en la página
+    function mostrarNotificacionVisual(mensaje) {
+      // Limpiar notificación anterior si existe
+      if (notificationTimeout) {
+        clearTimeout(notificationTimeout);
+      }
+
+      // Crear elemento de notificación
+      const existingNotif = document.getElementById('mensajeNotificacion');
+      if (existingNotif) {
+        existingNotif.remove();
+      }
+
+      const notificacion = document.createElement('div');
+      notificacion.id = 'mensajeNotificacion';
+      notificacion.style.cssText = `
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 16px 20px;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        z-index: 10000;
+        max-width: 350px;
+        animation: slideInRight 0.3s ease-out;
+      `;
+
+      notificacion.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 40px; height: 40px; background: ${mensaje.es_admin ? '#7c3aed' : 'rgba(255,255,255,0.3)'}; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 16px;">
+            ${mensaje.usuario_inicial}
+          </div>
+          <div style="flex: 1;">
+            <div style="font-weight: 600; margin-bottom: 4px; display: flex; align-items: center;">
+              ${mensaje.usuario_nombre}
+              ${mensaje.es_admin ? '<span style="background: #7c3aed; color: white; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 600; margin-left: 6px;">ADMIN</span>' : ''}
+            </div>
+            <div style="font-size: 14px; opacity: 0.95;">${mensaje.mensaje.substring(0, 50)}${mensaje.mensaje.length > 50 ? '...' : ''}</div>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(notificacion);
+
+      // Agregar animación
+      const style = document.createElement('style');
+      style.innerHTML = `
+        @keyframes slideInRight {
+          from {
+            transform: translateX(400px);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        @keyframes slideOutRight {
+          from {
+            transform: translateX(0);
+            opacity: 1;
+          }
+          to {
+            transform: translateX(400px);
+            opacity: 0;
+          }
+        }
+      `;
+      if (!document.getElementById('notificationStyles')) {
+        style.id = 'notificationStyles';
+        document.head.appendChild(style);
+      }
+
+      // Remover después de 5 segundos
+      notificationTimeout = setTimeout(() => {
+        notificacion.style.animation = 'slideOutRight 0.3s ease-out';
+        setTimeout(() => notificacion.remove(), 300);
+      }, 5000);
+
+      // Click para cerrar
+      notificacion.style.cursor = 'pointer';
+      notificacion.onclick = () => {
+        notificacion.style.animation = 'slideOutRight 0.3s ease-out';
+        setTimeout(() => notificacion.remove(), 300);
+      };
+    }
+
+    // Función de polling para obtener nuevos mensajes
+    function verificarNuevosMensajes() {
+      if (!destinatarioId) return;
+
+      fetch(`{{ route('mensajeria.obtener-nuevos') }}?destinatario_id=${destinatarioId}&ultimo_mensaje_id=${ultimoMensajeId}`, {
+        method: 'GET',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.mensajes && data.mensajes.length > 0) {
+          const chatMessages = document.getElementById('chatMessages');
+
+          // Agregar cada mensaje nuevo al DOM
+          data.mensajes.forEach(mensaje => {
+            const mensajeHTML = crearMensajeHTML(mensaje);
+            chatMessages.insertAdjacentHTML('beforeend', mensajeHTML);
+
+            // Actualizar último mensaje ID
+            if (mensaje.id > ultimoMensajeId) {
+              ultimoMensajeId = mensaje.id;
+            }
+
+            // Mostrar notificaciones solo para mensajes de otros usuarios
+            if (!mensaje.es_usuario_actual) {
+              mostrarNotificacionVisual(mensaje);
+              mostrarNotificacion(mensaje);
+            }
+          });
+
+          // Scroll al final
+          scrollToBottom();
+        }
+      })
+      .catch(error => {
+        console.error('Error al verificar nuevos mensajes:', error);
+      });
+    }
+
+    // Inicializar al cargar la página
+    window.addEventListener('load', () => {
+      scrollToBottom();
+
+      // Solicitar permiso para notificaciones
+      if ("Notification" in window && Notification.permission === "default") {
+        Notification.requestPermission();
+      }
+
+      // Iniciar polling cada 3 segundos
+      if (destinatarioId) {
+        pollingInterval = setInterval(verificarNuevosMensajes, 3000);
+      }
+    });
+
+    // Limpiar interval al salir de la página
+    window.addEventListener('beforeunload', () => {
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+      }
+    });
+
+    // Actualizar destinatario cuando se cambie de conversación
+    document.addEventListener('DOMContentLoaded', function() {
+      const conversationItems = document.querySelectorAll('.conversation-item');
+      conversationItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+          // Limpiar interval anterior
+          if (pollingInterval) {
+            clearInterval(pollingInterval);
+          }
+        });
+      });
+
+      // Envío de mensajes por AJAX sin recargar página
+      const formEnviarMensaje = document.getElementById('formEnviarMensaje');
+      if (formEnviarMensaje) {
+        formEnviarMensaje.addEventListener('submit', function(e) {
+          e.preventDefault();
+
+          const messageInput = document.getElementById('messageInput');
+          const destinatarioIdInput = document.getElementById('destinatarioIdInput');
+          const mensaje = messageInput.value.trim();
+
+          if (!mensaje || !destinatarioIdInput.value) {
+            return;
+          }
+
+          // Obtener token CSRF
+          const csrfToken = document.querySelector('input[name="_token"]').value;
+
+          // Deshabilitar input mientras se envía
+          messageInput.disabled = true;
+          const sendBtn = document.getElementById('sendBtn');
+          sendBtn.disabled = true;
+
+          // Enviar mensaje por AJAX
+          fetch('{{ route("mensajeria.enviar") }}', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': csrfToken,
+              'Accept': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+              mensaje: mensaje,
+              destinatario_id: destinatarioIdInput.value
+            })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              // Agregar mensaje al DOM inmediatamente
+              const chatMessages = document.getElementById('chatMessages');
+              const nuevoMensajeHTML = `
+                <div class="message-group user">
+                  <div class="message-content">
+                    <div class="message-text">${mensaje}</div>
+                  </div>
+                </div>
+              `;
+              chatMessages.insertAdjacentHTML('beforeend', nuevoMensajeHTML);
+
+              // Actualizar último mensaje ID
+              if (data.mensaje_id > ultimoMensajeId) {
+                ultimoMensajeId = data.mensaje_id;
+              }
+
+              // Limpiar input
+              messageInput.value = '';
+
+              // Scroll al final
+              scrollToBottom();
+            }
+          })
+          .catch(error => {
+            console.error('Error al enviar mensaje:', error);
+            alert('Error al enviar el mensaje. Intenta de nuevo.');
+          })
+          .finally(() => {
+            // Re-habilitar input
+            messageInput.disabled = false;
+            sendBtn.disabled = false;
+            messageInput.focus();
+          });
+        });
       }
     });
 </script>

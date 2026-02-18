@@ -2619,6 +2619,8 @@ public function store(ProductoRequest $request)
 
 ### **ProductoController API** (`app/Http/Controllers/Api/ProductoController.php`)
 
+> **✨ Actualización**: Todos los endpoints ahora devuelven URLs completas de imágenes para facilitar el consumo desde aplicaciones externas.
+
 ```php
 <?php
 
@@ -2632,11 +2634,13 @@ class ProductoController extends Controller
 {
     /**
      * GET /api/productos
-     * Lista todos los productos
+     * Lista todos los productos con URLs completas de imágenes
      */
     public function index()
     {
-        $productos = Producto::all();
+        $productos = Producto::all()->map(function($producto) {
+            return $this->transformProducto($producto);
+        });
         
         return response()->json([
             'success' => true,
@@ -2646,7 +2650,7 @@ class ProductoController extends Controller
     
     /**
      * GET /api/productos/{id}
-     * Muestra un producto específico
+     * Muestra un producto específico con URL completa de imagen
      */
     public function show($id)
     {
@@ -2661,7 +2665,7 @@ class ProductoController extends Controller
         
         return response()->json([
             'success' => true,
-            'data' => $producto
+            'data' => $this->transformProducto($producto)
         ]);
     }
     
@@ -2684,7 +2688,7 @@ class ProductoController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Producto creado',
-            'data' => $producto
+            'data' => $this->transformProducto($producto)
         ], 201);
     }
     
@@ -2716,7 +2720,7 @@ class ProductoController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Producto actualizado',
-            'data' => $producto
+            'data' => $this->transformProducto($producto)
         ]);
     }
     
@@ -2742,6 +2746,26 @@ class ProductoController extends Controller
             'message' => 'Producto eliminado'
         ]);
     }
+    
+    /**
+     * 🆕 Transforma un producto para incluir URLs completas de imágenes
+     * Facilita el consumo desde apps móviles y clientes externos
+     */
+    private function transformProducto(Producto $producto): array
+    {
+        return [
+            'id' => $producto->id,
+            'nombre' => $producto->nombre,
+            'descripcion' => $producto->descripcion,
+            'precio' => $producto->precio,
+            'stock' => $producto->stock,
+            'imagen' => $producto->imagen ? url($producto->imagen) : null,
+            'imagen_url' => $producto->imagen ? asset($producto->imagen) : asset('img/image.png'),
+            'categoria_id' => $producto->categoria_id,
+            'created_at' => $producto->created_at,
+            'updated_at' => $producto->updated_at,
+        ];
+    }
 }
 ```
 
@@ -2758,7 +2782,7 @@ Response: {
     "token": "1|xyz123abc..."
 }
 
-# 2. Listar productos
+# 2. Listar productos (con URLs completas de imágenes) 🆕
 GET http://tu-dominio/api/productos
 Headers: 
     Authorization: Bearer 1|xyz123abc...
@@ -2768,8 +2792,14 @@ Response: {
         {
             "id": 1,
             "nombre": "Sofá Moderno",
+            "descripcion": "Sofá de 3 plazas",
             "precio": 599.99,
-            "stock": 10
+            "stock": 10,
+            "imagen": "http://localhost/storage/productos/sofa.jpg",
+            "imagen_url": "http://localhost/storage/productos/sofa.jpg",
+            "categoria_id": 1,
+            "created_at": "2024-01-15T10:30:00.000000Z",
+            "updated_at": "2024-01-15T10:30:00.000000Z"
         }
     ]
 }
@@ -3170,43 +3200,547 @@ php artisan tinker
 
 ---
 
+## 📚 LIBRERÍAS Y TECNOLOGÍAS DETALLADAS
+
+### **Backend - PHP/Laravel:**
+
+#### **🔷 Laravel 11 (Framework Principal)**
+- **Propósito:** Framework MVC principal del proyecto
+- **Uso en el proyecto:**
+  - Enrutamiento de todas las páginas (web.php)
+  - Sistema de migraciones para base de datos
+  - Eloquent ORM para consultas
+  - Blade templating engine
+  - Sistema de middleware para protección de rutas
+  - Artisan CLI para comandos personalizados
+- **Instalación:** `composer require laravel/laravel`
+- **Documentación:** https://laravel.com/docs/11.x
+
+#### **🔷 Laravel Fortify (Autenticación)**
+- **Propósito:** Sistema completo de autenticación sin vistas
+- **Uso en el proyecto:**
+  - Registro de usuarios (/register)
+  - Login (/login)
+  - Recuperación de contraseña (/forgot-password, /reset-password)
+  - Gestión de sesiones
+  - Autenticación en dos factores (2FA) opcional
+  - Verificación de email
+- **Archivos clave:**
+  - `app/Providers/FortifyServiceProvider.php` - Configuración
+  - `config/fortify.php` - Opciones de autenticación
+  - `resources/views/livewire/auth/*` - Vistas de autenticación personalizadas
+- **Instalación:** `composer require laravel/fortify`
+- **Documentación:** https://laravel.com/docs/11.x/fortify
+
+#### **🔷 Laravel Sanctum (API Tokens)**
+- **Propósito:** Autenticación de API mediante tokens
+- **Uso en el proyecto:**
+  - Generación de tokens para API REST
+  - Protección de rutas API en `routes/api.php`
+  - Middleware `auth:sanctum` para endpoints protegidos
+  - Usado en endpoints de productos, pedidos, usuarios
+- **Instalación:** `composer require laravel/sanctum`
+- **Documentación:** https://laravel.com/docs/11.x/sanctum
+
+#### **🔷 Eloquent ORM**
+- **Propósito:** Mapeo objeto-relacional para base de datos
+- **Uso en el proyecto:**
+  - Modelos: User, Producto, Pedido, Carrito, Mensaje, Incidencia, etc.
+  - Relaciones: hasMany, belongsTo, belongsToMany
+  - Scopes: `scopeBuscar()` en Producto para filtros
+  - Query Builder para consultas complejas
+- **Archivos:** `app/Models/*`
+- **Incluido en Laravel Core**
+
+#### **🔷 Observer Pattern (Laravel)**
+- **Propósito:** Ejecutar acciones automáticas en eventos de modelos
+- **Uso en el proyecto:**
+  - `UserObserver` - Asigna automáticamente el rol "user" a nuevos registros
+  - Se ejecuta en el evento `created` del modelo User
+  - Registrado en `AppServiceProvider::boot()`
+- **Archivos:**
+  - `app/Observers/UserObserver.php`
+  - `app/Providers/AppServiceProvider.php`
+- **Implementación:**
+  ```php
+  // En UserObserver
+  public function created(User $user) {
+      $rolUser = Rol::where('nombre', 'user')->first();
+      if ($rolUser) {
+          $user->roles()->attach($rolUser->id);
+      }
+  }
+  
+  // En AppServiceProvider
+  User::observe(UserObserver::class);
+  ```
+
+#### **🔷 Middleware Personalizado**
+- **Propósito:** Filtrar requests HTTP antes de llegar a controladores
+- **Uso en el proyecto:**
+  - `CheckRole` - Verifica que el usuario tenga un rol específico
+  - Protege rutas de administración
+  - Redirige usuarios no autorizados
+- **Archivos:** `app/Http/Middleware/CheckRole.php`
+- **Uso en rutas:**
+  ```php
+  Route::middleware(['auth', 'checkRole:admin'])->group(function () {
+      Route::get('/admin/dashboard', ...);
+  });
+  ```
+
+#### **🔷 Notificaciones Laravel**
+- **Propósito:** Envío de notificaciones por múltiples canales
+- **Uso en el proyecto:**
+  - `MensajeRecibidoNotification` - Notifica cuando llega un mensaje nuevo
+  - `PedidoCreadoNotification` - Notifica creación de pedido
+  - Canales: Database y Mail
+  - Almacena en tabla `notifications`
+- **Archivos:** `app/Notifications/*`
+- **Uso:**
+  ```php
+  $user->notify(new MensajeRecibidoNotification($mensaje));
+  ```
+
+#### **🔷 Form Requests (Validación)**
+- **Propósito:** Validación centralizada de formularios
+- **Uso en el proyecto:**
+  - Validación de entrada de datos en controladores
+  - Mensajes de error personalizados
+  - Autorización de acciones
+- **Archivos:** `app/Http/Requests/*`
+- **Incluido en Laravel Core**
+
+### **Frontend:**
+
+#### **🔷 Blade Templating Engine**
+- **Propósito:** Motor de plantillas de Laravel
+- **Uso en el proyecto:**
+  - Todas las vistas del proyecto (.blade.php)
+  - Directivas: @extends, @section, @foreach, @if
+  - Componentes de layout: customer.blade.php, admin.blade.php
+  - Sin Livewire - Todo Blade tradicional
+- **Archivos:** `resources/views/**/*.blade.php`
+- **Incluido en Laravel Core**
+
+#### **🔷 Tailwind CSS**
+- **Propósito:** Framework CSS utility-first
+- **Uso en el proyecto:**
+  - Estilos principales de la aplicación
+  - Clases utility para layout responsive
+  - Personalización de colores y temas
+- **Archivos:** 
+  - `resources/css/app.css`
+  - `tailwind.config.js`
+  - `vite.config.js`
+- **Instalación:** `npm install -D tailwindcss postcss autoprefixer`
+- **Compilación:** `npm run dev` o `npm run build`
+- **Documentación:** https://tailwindcss.com
+
+#### **🔷 Font Awesome (Iconos)**
+- **Propósito:** Biblioteca de iconos vectoriales
+- **Uso en el proyecto:**
+  - Iconos en navegación, botones, formularios
+  - Clases: fa-user, fa-shopping-cart, fa-envelope, etc.
+  - Versión CDN incluida en layouts
+- **Implementación:** 
+  ```html
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <i class="fas fa-shopping-cart"></i>
+  ```
+- **Documentación:** https://fontawesome.com
+
+#### **🔷 JavaScript Vanilla**
+- **Propósito:** Interactividad sin frameworks adicionales
+- **Uso en el proyecto:**
+  - Sistema de polling para mensajería en tiempo real
+  - Notificaciones del navegador (Web Notifications API)
+  - Actualización dinámica de UI
+  - Manejo de formularios
+  - Scroll automático en chat
+  - Eventos y listeners
+- **Archivos:**
+  - Scripts inline en vistas Blade (@push('scripts'))
+  - recursos/js/app.js para código compartido
+- **Características usadas:**
+  - Fetch API para AJAX
+  - Notification API del navegador
+  - DOM manipulation
+  - Event listeners
+  - SetInterval para polling
+  - LocalStorage (si aplica)
+
+### **Base de Datos:**
+
+#### **🔷 MySQL / MariaDB**
+- **Propósito:** Sistema de gestión de base de datos relacional
+- **Uso en el proyecto:**
+  - Almacenamiento de todos los datos
+  - Tablas: users, productos, pedidos, carritos, mensajes, roles, etc.
+  - Relaciones 1:N y N:M
+  - Transacciones para integridad de datos
+- **Configuración:** `.env` - DB_CONNECTION=mysql
+- **Migraciones:** `database/migrations/*`
+
+#### **🔷 Faker (Generación de Datos)**
+- **Propósito:** Generación de datos de prueba realistas
+- **Uso en el proyecto:**
+  - Factories para productos y usuarios
+  - Seeders para poblar base de datos
+  - Datos aleatorios pero coherentes
+- **Archivos:** 
+  - `database/factories/ProductoFactory.php`
+  - `database/factories/UserFactory.php`
+- **Instalación:** `composer require fakerphp/faker --dev`
+- **Uso:**
+  ```php
+  $this->faker->name();
+  $this->faker->email();
+  $this->faker->paragraph();
+  ```
+
+### **Herramientas de Desarrollo:**
+
+#### **🔷 Composer**
+- **Propósito:** Gestor de dependencias PHP
+- **Uso:** Instalar Laravel, Fortify, Sanctum y paquetes PHP
+- **Archivo:** `composer.json`
+- **Comandos:** `composer install`, `composer update`
+
+#### **🔷 NPM (Node Package Manager)**
+- **Propósito:** Gestor de dependencias JavaScript
+- **Uso:** Instalar Tailwind CSS, Vite, herramientas frontend
+- **Archivo:** `package.json`
+- **Comandos:** `npm install`, `npm run dev`, `npm run build`
+
+#### **🔷 Vite**
+- **Propósito:** Build tool para assets frontend
+- **Uso:** Compilación de CSS y JavaScript
+- **Archivo:** `vite.config.js`
+- **Hot reload en desarrollo
+
+#### **🔷 Artisan CLI**
+- **Propósito:** Línea de comandos de Laravel
+- **Uso en el proyecto:**
+  - `php artisan make:controller` - Crear controladores
+  - `php artisan make:model` - Crear modelos
+  - `php artisan migrate` - Ejecutar migraciones
+  - `php artisan db:seed` - Poblar base de datos
+  - `php artisan make:observer` - Crear observers
+  - `php artisan serve` - Servidor de desarrollo
+  - `php artisan route:list` - Listar rutas
+- **Incluido en Laravel**
+
+---
+
 ## 🎓 RESUMEN DE TECNOLOGÍAS USADAS
 
 ### **Backend:**
 - **Laravel 11** - Framework principal
 - **Eloquent ORM** - Manejo de base de datos
-- **Fortify** - Autenticación
+- **Fortify** - Autenticación (login, registro, reset password)
 - **Sanctum** - API tokens
 - **MySQL** - Base de datos
+- **Observer Pattern** - Auto-asignación de roles
+- **Form Requests** - Validaciones centralizadas
+- **Notifications** - Sistema de notificaciones
 
 ### **Frontend:**
-- **Blade** - Motor de plantillas
-- **Tailwind CSS** - Estilos
-- **JavaScript Vanilla** - Interactividad
-- **Font Awesome** - Iconos
-- **AJAX** - Peticiones asíncronas
+- **Blade** - Motor de plantillas (sin Livewire)
+- **Tailwind CSS** - Framework CSS utility-first
+- **JavaScript Vanilla** - Interactividad y AJAX
+- **Font Awesome** - Iconos vectoriales
+- **Fetch API** - Peticiones asíncronas
+- **Web Notifications API** - Notificaciones del navegador
 
-### **Características:**
+### **Características Implementadas:**
 - ✅ Relaciones 1:N y N:M
 - ✅ Middleware personalizado (CheckRole)
-- ✅ Factories para datos
-- ✅ Control de acceso completo
-- ✅ Componentes Blade
-- ✅ Vistas personalizadas
+- ✅ Factories para datos de prueba
+- ✅ Control de acceso completo por roles
+- ✅ Componentes Blade y layouts
+- ✅ Vistas personalizadas (NO Livewire)
 - ✅ Form Requests con validaciones
-- ✅ Subida de archivos
-- ✅ API REST completa
-- ✅ Roles de usuarios
-- ✅ CRUD de usuarios (admin)
-- ✅ Recuperar contraseña
+- ✅ Subida de archivos (imágenes de productos)
+- ✅ API REST completa con Sanctum
+- ✅ Roles de usuarios (admin/user)
+- ✅ CRUD de usuarios (administración)
+- ✅ Recuperar contraseña con Fortify
 - ✅ Verificación de email
 - ✅ Notificaciones (email + database)
-- ✅ 2FA opcional
+- ✅ 2FA opcional con Fortify
+- ✅ **Observer para auto-asignación de roles (usuario)**
+- ✅ **Estados vacíos con mensajes personalizados**
+- ✅ **Mensajería en tiempo real con polling y AJAX**
+- ✅ **Notificaciones visuales y del navegador en toda la app**
+- ✅ **Distinción visual de administradores con badge ADMIN**
+- ✅ **API con URLs completas de imágenes para consumo externo**
+- ✅ **Visualización correcta de imágenes en panel administrativo**
 
-### **Vistas (NO Livewire):**
-- Todas las vistas son **Blade tradicionales**
-- JavaScript vanilla para interactividad
-- Sin componentes Livewire en el proyecto actual
+---
+
+### **Nuevas Funcionalidades (Última Actualización - Febrero 2026):**
+> **📝 Total: 9 características principales implementadas y documentadas**
+
+#### **1. Auto-Asignación de Rol "Usuario" al Registrarse** ✅
+- **Implementación:** UserObserver con rol correcto
+- **Ubicación:** `app/Observers/UserObserver.php`
+- **Funcionamiento:**
+  - Al crear un usuario nuevo, se dispara el evento `created`
+  - **IMPORTANTE:** El observer busca el rol **'usuario'** (no 'user') porque así se crea en el seeder
+  - Automáticamente vincula el rol al usuario mediante la relación N:M
+  - Registrado en `AppServiceProvider::boot()`
+- **Código clave:**
+  ```php
+  public function created(User $user): void
+  {
+      $rolUser = Rol::where('nombre', 'usuario')->first();
+      if ($rolUser) {
+          $user->roles()->attach($rolUser->id);
+      }
+  }
+  ```
+- **Archivos modificados:**
+  - `app/Observers/UserObserver.php` - Observer creado
+  - `app/Providers/AppServiceProvider.php` - Registrado con `User::observe(UserObserver::class)`
+- **Beneficio:** Los usuarios ya no aparecen como "Sin rol" en la base de datos
+
+#### **2. Estado Vacío en Catálogo de Productos** ✅
+- **Problema resuelto:** Al buscar productos inexistentes, mostraba productos falsos "Producto 1, 2, 3..." sin imagen
+- **Solución implementada:**
+  - Mensaje personalizado con icono 🔍 cuando no hay resultados
+  - Texto contextual: diferencia si hay búsqueda activa o no hay stock
+  - Botón "Ver todos los productos" para limpiar filtros
+  - El controlador filtra automáticamente por `stock > 0`
+  - Eliminada búsqueda por columna inexistente `categoria`
+- **Archivos modificados:**
+  - `app/Http/Controllers/ProductoController.php`:
+    - Filtro `where('stock', '>', 0)`
+    - Búsqueda solo en `nombre` y `descripcion`
+    - Eliminado filtro por categoría (columna no existe)
+  - `resources/views/catalogo.blade.php`:
+    - Reemplazado @for loop con estado vacío elegante
+    - Diseño centrado con estilos inline
+
+#### **3. Badge "ADMIN" Visible en Mensajes** 🎯
+- **Implementación:** Badge morado junto al nombre del administrador
+- **Características:**
+  - Solo aparece para usuarios con rol 'admin'
+  - Color morado (#7c3aed) distintivo
+  - Se muestra tanto en mensajes estáticos (Blade) como dinámicos (AJAX)
+  - Avatar del admin también en morado
+- **Diseño del badge:**
+  ```html
+  <span style="background: #7c3aed; color: white; font-size: 9px; 
+                padding: 2px 6px; border-radius: 4px; font-weight: 600;">
+      ADMIN
+  </span>
+  ```
+- **Archivos modificados:**
+  - `resources/views/mensajeria.blade.php`:
+    - Badge en mensajes Blade (líneas 471-478)
+    - Badge en función `crearMensajeHTML()` JavaScript
+    - Badge en notificaciones visuales
+  - `app/Http/Controllers/MensajeController.php`:
+    - Campo `es_admin` incluido en respuestas JSON
+- **Resultado:** Los administradores son fácilmente identificables
+
+#### **4. Sistema de Mensajería en Tiempo Real** 🚀
+- **Tecnología:** Polling JavaScript + AJAX
+- **Polling en página de mensajería:**
+  - Cada 3 segundos verifica nuevos mensajes
+  - Solo activo en `/mensajeria`
+  - Endpoint: `GET /mensajeria/obtener-nuevos`
+  - Parámetros: `destinatario_id`, `ultimo_mensaje_id`
+  
+- **Envío AJAX sin recargar:**
+  - Formulario interceptado con `e.preventDefault()`
+  - Envío por `fetch()` con JSON
+  - Mensaje aparece inmediatamente en el DOM
+  - Input se limpia y mantiene el foco
+  
+- **Funcionalidades:**
+  - ✅ Actualización automática sin recargar página
+  - ✅ Scroll automático al final
+  - ✅ Deshabilita input mientras envía
+  - ✅ Manejo de errores con alert
+  - ✅ Integración con notificaciones
+  
+- **Endpoints creados:**
+  1. `GET /mensajeria/obtener-nuevos` - Polling de mensajes nuevos
+  2. `GET /mensajeria/conteo-no-leidos` - Notificaciones globales
+  3. `POST /mensajeria/enviar` - Acepta AJAX y devuelve JSON
+  
+- **Archivos modificados:**
+  - `app/Http/Controllers/MensajeController.php`:
+    - `obtenerNuevos()` - Devuelve mensajes con `es_admin`
+    - `conteoNoLeidos()` - Devuelve mensajes del último minuto
+    - `enviar()` - Detecta AJAX con `wantsJson()` y responde JSON
+  - `routes/web.php` - Rutas agregadas
+  - `resources/views/mensajeria.blade.php`:
+    - JavaScript de polling cada 3 segundos
+    - Función `crearMensajeHTML()` para mensajes dinámicos
+    - Envío AJAX con fetch()
+
+#### **5. Notificaciones Globales en Toda la Aplicación** 🌍
+- **Novedad:** Notificaciones funcionan en CUALQUIER página, no solo en mensajería
+- **Implementación:** Script global en `layouts/customer.blade.php`
+- **Polling global:**
+  - Cada 5 segundos en todas las páginas (excepto `/mensajeria`)
+  - Endpoint: `GET /mensajeria/conteo-no-leidos`
+  - Devuelve mensajes del último minuto
+  
+- **Dos tipos de notificaciones:**
+  
+  1. **Notificación del Navegador (Web Notifications API):**
+     - Solicita permiso automáticamente
+     - Aparece en sistema operativo (Windows/Linux/Mac)
+     - Título: "Nuevo mensaje de [Nombre] (ADMIN)" si es admin
+     - Incluye preview del mensaje
+     - Click lleva a `/mensajeria`
+     
+  2. **Notificación Visual en Página:**
+     - Esquina superior derecha
+     - Gradiente morado elegante (#667eea → #764ba2)
+     - Avatar morado si es admin
+     - Badge "ADMIN" si corresponde
+     - Animación deslizante (slide in/out)
+     - Auto-cierre en 5 segundos
+     - Click lleva a `/mensajeria`
+  
+- **Características:**
+  - ✅ Funciona en catálogo, perfil, pedidos, etc.
+  - ✅ NO interfiere con la página de mensajería
+  - ✅ Muestra badge ADMIN en notificaciones
+  - ✅ Diferentes colores para admin vs usuario
+  - ✅ Implementado con @auth (solo usuarios logueados)
+  
+- **Archivos modificados:**
+  - `resources/views/layouts/customer.blade.php`:
+    - Script global de 170+ líneas antes de `@stack('scripts')`
+    - Funciones: `mostrarNotificacionGlobal()`, `mostrarNotificacionNavegador()`
+    - Polling: `verificarNuevosMensajesGlobal()` cada 5 segundos
+    - Condicional: solo activo fuera de `/mensajeria`
+  - `app/Http/Controllers/MensajeController.php`:
+    - `conteoNoLeidos()` modificado para devolver array de mensajes
+    - Incluye datos completos: `es_admin`, `usuario_nombre`, etc.
+
+#### **6. Corrección de Error de Variable $token** ✅
+- **Error original:** `Undefined variable $token` en reset-password (línea 249)
+- **Causa:** Vista intentaba acceder a `$token` que no existía como variable
+- **Solución aplicada:**
+  ```blade
+  <!-- ANTES (ERROR) -->
+  <input type="hidden" name="token" value="{{ $token }}">
+  
+  <!-- DESPUÉS (CORRECTO) -->
+  <input type="hidden" name="token" value="{{ request()->route('token') }}">
+  ```
+- **Explicación:** El token viene como parámetro de ruta en Fortify, se accede con `request()->route('token')`
+- **Archivos:** `resources/views/livewire/auth/reset-password.blade.php`
+
+#### **7. Corrección de Error SQL - Columna 'categoria'** ✅
+- **Error original:** 
+  ```sql
+  SQLSTATE[42S22]: Column not found: 1054 Unknown column 'categoria' in 'where clause'
+  ```
+- **Causa:** El controlador buscaba en columna `categoria` que no existe (la tabla tiene `categoria_id`)
+- **Solución:**
+  - Eliminada búsqueda por columna inexistente
+  - Búsqueda ahora solo en `nombre` y `descripcion`
+  - Eliminado filtro de categoría hasta definir relación correcta
+- **Archivos:** `app/Http/Controllers/ProductoController.php`
+- **Código corregido:**
+  ```php
+  // ANTES (ERROR)
+  $query->where(function($q) use ($buscar) {
+      $q->where('nombre', 'LIKE', '%' . $buscar . '%')
+        ->orWhere('descripcion', 'LIKE', '%' . $buscar . '%')
+        ->orWhere('categoria', 'LIKE', '%' . $buscar . '%'); // ❌ No existe
+  });
+  
+  // DESPUÉS (CORRECTO)
+  $query->where(function($q) use ($buscar) {
+      $q->where('nombre', 'LIKE', '%' . $buscar . '%')
+        ->orWhere('descripcion', 'LIKE', '%' . $buscar . '%'); // ✅ Solo campos existentes
+  });
+  ```
+
+#### **8. API REST - URLs Completas de Imágenes** 🖼️
+- **Problema:** El endpoint `/api/productos` devolvía rutas relativas de imágenes
+- **Solución:** Transformación de productos con URLs completas
+- **Implementación:** Método `transformProducto()` privado
+- **Nuevos campos en respuesta JSON:**
+  ```json
+  {
+    "id": 1,
+    "nombre": "Producto",
+    "imagen": "http://localhost/storage/productos/imagen.jpg",
+    "imagen_url": "http://localhost/storage/productos/imagen.jpg"
+  }
+  ```
+- **Características:**
+  - `imagen`: URL completa con `url()` helper
+  - `imagen_url`: URL con `asset()` helper
+  - Fallback a `img/image.png` si no hay imagen
+  - Aplicado en todos los endpoints: index, show, store, update
+- **Archivos modificados:**
+  - `app/Http/Controllers/Api/ProductoController.php`:
+    - Método `transformProducto()` agregado
+    - `index()` usa `->map()` para transformar colección
+    - `show()`, `store()`, `update()` devuelven producto transformado
+- **Beneficio:** Las imágenes ahora son visibles en aplicaciones que consumen la API
+
+#### **9. Corrección de Rutas de Imágenes en Vistas Admin** 🎨
+- **Problema:** Las imágenes en las vistas de administración no se visualizaban correctamente
+- **Causa:** Las vistas usaban `asset('storage/' . $producto->imagen)` pero las imágenes están en `public/img/productos/`
+- **Solución:** Cambiado a `asset($producto->imagen)` para usar la ruta correcta desde la base de datos
+- **Vistas corregidas:**
+  ```blade
+  <!-- ANTES (INCORRECTO) -->
+  <img src="{{ asset('storage/' . $producto->imagen) }}">
+  <!-- Generaba: http://localhost:8000/storage/img/productos/sofa.png (❌ 403 Forbidden)
+  
+  <!-- DESPUÉS (CORRECTO) -->
+  <img src="{{ asset($producto->imagen) }}">
+  <!-- Genera: http://localhost:8000/img/productos/sofa.png (✅ Funciona)
+  ```
+- **Archivos modificados:**
+  - `resources/views/admin/productos/index.blade.php` - Listado de productos
+  - `resources/views/admin/productos/edit.blade.php` - Edición de producto
+  - `resources/views/admin/pedidos/show.blade.php` - Detalle de pedido
+- **Resultado:** Todas las imágenes de productos ahora se visualizan correctamente en el panel de administración
+
+---
+
+## 🔧 RESUMEN DE CORRECCIONES Y MEJORAS
+
+### **Errores Corregidos:**
+1. ✅ UserObserver buscaba rol 'user' → Ahora busca 'usuario'
+2. ✅ Variable $token indefinida → Ahora usa `request()->route('token')`
+3. ✅ Columna 'categoria' inexistente → Eliminada de búsqueda
+4. ✅ Imágenes no visibles en API → Agregadas URLs completas
+5. ✅ Imágenes no visibles en panel admin → Corregidas rutas de assets
+6. ✅ Mensajes requieren recargar → Ahora AJAX en tiempo real
+
+### **Funcionalidades Agregadas:**
+1. 🎯 Badge "ADMIN" visible en mensajes y notificaciones
+2. 🌍 Sistema de notificaciones globales en toda la app
+3. 🚀 Envío de mensajes por AJAX sin recargar
+4. 📱 Notificaciones del navegador (Web Notifications API)
+5. 💬 Notificaciones visuales elegantes con animación
+6. 🔄 Polling inteligente (3s en mensajería, 5s en otras páginas)
+7. 🖼️ API REST con imágenes funcionando correctamente
+8. 🎨 Visualización correcta de imágenes en panel administrativo
+
+### **Experiencia de Usuario Mejorada:**
+- ⚡ Mensajería instantánea sin recargas
+- 🔔 Notificaciones desde cualquier página
+- 👤 Identificación clara de administradores
+- 🔍 Estados vacíos informativos
+- 🎨 Diseño consistente y moderno
+- 📦 API lista para consumo externo (apps móviles, Postman, etc.)
+- 🖼️ Todas las imágenes visibles en todas las secciones (web y API)
 
 ---
 

@@ -188,18 +188,21 @@
                     </div>
                 </div>
             @empty
-                <!-- Productos de ejemplo si no hay en BD -->
-                @for($i = 1; $i <= 8; $i++)
-                <div class="product-card">
-                    <a href="#" class="product-image">
-                        <img src="{{ asset('img/image.png') }}" alt="Producto {{ $i }}">
+                <!-- Mensaje cuando no hay productos -->
+                <div style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; text-align: center;">
+                    <div style="font-size: 80px; margin-bottom: 20px; opacity: 0.3;">🔍</div>
+                    <h2 style="color: #1a1a1a; font-size: 24px; margin-bottom: 10px;">No se encontraron productos</h2>
+                    <p style="color: #666; margin-bottom: 30px;">
+                        @if(request('buscar') || request('categoria'))
+                            No hay productos disponibles que coincidan con tu búsqueda.
+                        @else
+                            Actualmente no hay productos en stock.
+                        @endif
+                    </p>
+                    <a href="{{ route('catalogo') }}" style="background: var(--primary-color); color: #1a1a1a; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s;">
+                        Ver todos los productos
                     </a>
-                    <div class="product-info">
-                        <h3 class="product-name">Producto {{ $i }}</h3>
-                        <p class="product-price">10.99€</p>
-                    </div>
                 </div>
-                @endfor
             @endforelse
         </div>
     </div>

@@ -13,7 +13,7 @@ class ProductoController extends Controller
      */
     public function index(Request $request)
     {
-        // Obtener todos los productos o filtrados por búsqueda
+        // Obtener todos los productos o filtrados por búsqueda/categoría
         $query = Producto::query();
 
         // Si hay un término de búsqueda
@@ -25,7 +25,7 @@ class ProductoController extends Controller
             });
         }
 
-        $productos = $query->get();
+        $productos = $query->where('stock', '>', 0)->get();
 
         return view('catalogo', compact('productos'));
     }

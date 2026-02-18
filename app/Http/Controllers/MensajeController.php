@@ -52,13 +52,97 @@ class MensajeController extends Controller
             'destinatario_id' => 'required|exists:users,id',
         ]);
 
-        Mensaje::create([
+        $mensaje = Mensaje::create([
             'usuario_id' => Auth::id(),
             'destinatario_id' => $validated['destinatario_id'],
             'mensaje' => $validated['mensaje'],
         ]);
 
+        // Si es una petición AJAX, devolver JSON
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'mensaje_id' => $mensaje->id,
+                'mensaje' => $mensaje->mensaje,
+                'usuario_id' => $mensaje->usuario_id,
+            ]);
+        }
+
+        // Si es petición normal, redirigir
         return redirect()->route('mensajeria', ['destinatario_id' => $validated['destinatario_id']])
             ->with('success', 'Mensaje enviado');
+    }
+
+    /**
+     * Obtener nuevos mensajes para polling (AJAX)
+     */
+    public function obtenerNuevos(Request $request)
+    {
+        $destinatarioId = $request->get('destinatario_id');
+        $ultimoMensajeId = $request->get('ultimo_mensaje_id', 0);
+
+        if (!$destinatarioId) {
+            return response()->json(['mensajes' => []]);
+        }
+
+        // Obtener mensajes nuevos de la conversación
+        $mensajes = Mensaje::where('id', '>', $ultimoMensajeId)
+            ->where(function($query) use ($destinatarioId) {
+                $query->where(function($q) use ($destinatarioId) {
+                    $q->where('usuario_id', Auth::id())
+                      ->where('destinatario_id', $destinatarioId);
+                })->orWhere(function($q) use ($destinatarioId) {
+                    $q->where('usuario_id', $destinatarioId)
+                      ->where('destinatario_id', Auth::id());
+                });
+            })
+            ->with('usuario.roles')
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        return response()->json([
+            'mensajes' => $mensajes->map(function($mensaje) {
+                return [
+                    'id' => $mensaje->id,
+                    'mensaje' => $mensaje->mensaje,
+                    'usuario_id' => $mensaje->usuario_id,
+                    'usuario_nombre' => $mensaje->usuario->name,
+                    'usuario_inicial' => strtoupper(substr($mensaje->usuario->name, 0, 1)),
+                    'es_usuario_actual' => $mensaje->usuario_id == Auth::id(),
+                    'es_admin' => $mensaje->usuario->roles->contains('nombre', 'admin'),
+                    'created_at' => $mensaje->created_at->format('H:i'),
+                ];
+            }),
+            'hay_nuevos' => $mensajes->where('usuario_id', '!=', Auth::id())->count() > 0
+        ]);
+    }
+
+    /**
+     * Obtener conteo de mensajes no leídos (notificaciones globales)
+     */
+    public function conteoNoLeidos()
+    {
+        // Obtener mensajes donde el usuario actual es el destinatario
+        // y fueron enviados en el último minuto (mensajes "muy nuevos")
+        $mensajes = Mensaje::where('destinatario_id', Auth::id())
+            ->where('created_at', '>', now()->subMinute())
+            ->with('usuario.roles')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'conteo' => $mensajes->count(),
+            'mensajes' => $mensajes->map(function($mensaje) {
+                return [
+                    'id' => $mensaje->id,
+                    'mensaje' => $mensaje->mensaje,
+                    'usuario_id' => $mensaje->usuario_id,
+                    'usuario_nombre' => $mensaje->usuario->name,
+                    'usuario_inicial' => strtoupper(substr($mensaje->usuario->name, 0, 1)),
+                    'es_admin' => $mensaje->usuario->roles->contains('nombre', 'admin'),
+                    'created_at' => $mensaje->created_at->format('H:i'),
+                ];
+            })
+        ]);
     }
 }

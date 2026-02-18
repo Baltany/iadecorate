@@ -14,7 +14,10 @@ class ProductoController extends Controller
      */
     public function index(): JsonResponse
     {
-        $productos = Producto::all();
+        $productos = Producto::all()->map(function($producto) {
+            return $this->transformProducto($producto);
+        });
+
         return response()->json([
             'success' => true,
             'data' => $productos
@@ -40,7 +43,7 @@ class ProductoController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Producto creado exitosamente',
-            'data' => $producto
+            'data' => $this->transformProducto($producto)
         ], 201);
     }
 
@@ -60,7 +63,7 @@ class ProductoController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $producto
+            'data' => $this->transformProducto($producto)
         ]);
     }
 
@@ -92,7 +95,7 @@ class ProductoController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Producto actualizado exitosamente',
-            'data' => $producto
+            'data' => $this->transformProducto($producto)
         ]);
     }
 
@@ -116,5 +119,24 @@ class ProductoController extends Controller
             'success' => true,
             'message' => 'Producto eliminado exitosamente'
         ]);
+    }
+
+    /**
+     * Transform producto para incluir URL completa de imagen
+     */
+    private function transformProducto(Producto $producto): array
+    {
+        return [
+            'id' => $producto->id,
+            'nombre' => $producto->nombre,
+            'descripcion' => $producto->descripcion,
+            'precio' => $producto->precio,
+            'stock' => $producto->stock,
+            'imagen' => $producto->imagen ? url($producto->imagen) : null,
+            'imagen_url' => $producto->imagen ? asset($producto->imagen) : asset('img/image.png'),
+            'categoria_id' => $producto->categoria_id,
+            'created_at' => $producto->created_at,
+            'updated_at' => $producto->updated_at,
+        ];
     }
 }

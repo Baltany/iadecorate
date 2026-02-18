@@ -200,7 +200,7 @@
           <label for="imagen" class="form-label">Imagen del Producto</label>
           @if($producto->imagen)
             <div>
-              <img src="{{ asset('storage/' . $producto->imagen) }}" alt="{{ $producto->nombre }}" class="imagen-preview">
+              <img src="{{ asset($producto->imagen) }}" alt="{{ $producto->nombre }}" class="imagen-preview">
               <p class="text-muted mt-2"><small>Imagen actual. Sube una nueva para reemplazarla.</small></p>
             </div>
           @endif
