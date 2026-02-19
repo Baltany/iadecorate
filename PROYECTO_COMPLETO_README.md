@@ -3476,53 +3476,331 @@ php artisan tinker
 - ✅ **Distinción visual de administradores con badge ADMIN**
 - ✅ **API con URLs completas de imágenes para consumo externo**
 - ✅ **Visualización correcta de imágenes en panel administrativo**
+- ✅ **Subida de imágenes funcionando correctamente con prefijo storage/**
 
 ---
 
-### **Nuevas Funcionalidades (Última Actualización - Febrero 2026):**
-> **📝 Total: 9 características principales implementadas y documentadas**
+### **Características Avanzadas Implementadas:**
+> **📝 Documentación técnica de las 10 características principales del sistema**
 
-#### **1. Auto-Asignación de Rol "Usuario" al Registrarse** ✅
-- **Implementación:** UserObserver con rol correcto
-- **Ubicación:** `app/Observers/UserObserver.php`
-- **Funcionamiento:**
-  - Al crear un usuario nuevo, se dispara el evento `created`
-  - **IMPORTANTE:** El observer busca el rol **'usuario'** (no 'user') porque así se crea en el seeder
-  - Automáticamente vincula el rol al usuario mediante la relación N:M
-  - Registrado en `AppServiceProvider::boot()`
-- **Código clave:**
-  ```php
-  public function created(User $user): void
-  {
-      $rolUser = Rol::where('nombre', 'usuario')->first();
-      if ($rolUser) {
-          $user->roles()->attach($rolUser->id);
-      }
-  }
-  ```
-- **Archivos modificados:**
-  - `app/Observers/UserObserver.php` - Observer creado
-  - `app/Providers/AppServiceProvider.php` - Registrado con `User::observe(UserObserver::class)`
-- **Beneficio:** Los usuarios ya no aparecen como "Sin rol" en la base de datos
+---
 
-#### **2. Estado Vacío en Catálogo de Productos** ✅
-- **Problema resuelto:** Al buscar productos inexistentes, mostraba productos falsos "Producto 1, 2, 3..." sin imagen
-- **Solución implementada:**
-  - Mensaje personalizado con icono 🔍 cuando no hay resultados
-  - Texto contextual: diferencia si hay búsqueda activa o no hay stock
-  - Botón "Ver todos los productos" para limpiar filtros
-  - El controlador filtra automáticamente por `stock > 0`
-  - Eliminada búsqueda por columna inexistente `categoria`
-- **Archivos modificados:**
-  - `app/Http/Controllers/ProductoController.php`:
-    - Filtro `where('stock', '>', 0)`
-    - Búsqueda solo en `nombre` y `descripcion`
-    - Eliminado filtro por categoría (columna no existe)
-  - `resources/views/catalogo.blade.php`:
-    - Reemplazado @for loop con estado vacío elegante
-    - Diseño centrado con estilos inline
+## 🔐 **1. Sistema de Roles y Auto-Asignación**
 
-#### **3. Badge "ADMIN" Visible en Mensajes** 🎯
+### **Arquitectura del Sistema de Roles:**
+Este proyecto implementa un sistema de roles basado en **Observer Pattern** que asigna automáticamente el rol "usuario" a cada nuevo registro.
+
+### **Componentes Principales:**
+
+#### **UserObserver** (`app/Observers/UserObserver.php`)
+```php
+class UserObserver
+{
+    public function created(User $user): void
+    {
+        $rolUser = Rol::where('nombre', 'usuario')->first();
+        if ($rolUser) {
+            $user->roles()->attach($rolUser->id);
+        }
+    }
+}
+```
+
+**Flujo de funcionamiento:**
+1. Usuario se registra mediante Fortify
+2. Evento `created` dispara el observer
+3. Observer busca rol con nombre 'usuario' en BD
+4. Vincula automáticamente mediante tabla pivote `rol_user`
+5. Usuario queda asociado sin intervención manual
+
+**Registro del Observer:**
+- Ubicación: `app/Providers/AppServiceProvider.php` → método `boot()`
+- Código: `User::observe(UserObserver::class);`
+
+**Consideraciones técnicas:**
+- ⚠️ El nombre del rol debe ser exactamente 'usuario' (como está en seeders)
+- La relación N:M se gestiona mediante `belongsToMany()` en modelos
+- Middleware `CheckRole` valida permisos en rutas protegidas
+
+---
+
+## 🔍 **2. Estados Vacíos Contextuales**
+
+### **Implementación de Fallbacks Informativos:**
+Gestión inteligente de casos donde no hay resultados que mostrar, mejorando la UX.
+
+### **Catálogo de Productos** (`resources/views/catalogo.blade.php`)
+
+**Lógica del controlador:**
+```php
+public function index(Request $request)
+{
+    $query = Producto::query();
+    
+    if ($request->has('buscar') && !empty($request->buscar)) {
+        $buscar = $request->buscar;
+        $query->where(function($q) use ($buscar) {
+            $q->where('nombre', 'LIKE', '%' . $buscar . '%')
+              ->orWhere('descripcion', 'LIKE', '%' . $buscar . '%');
+        });
+    }
+    
+    $productos = $query->where('stock', '>', 0)->get();
+    return view('catalogo', compact('productos'));
+}
+```
+
+**Vista con estado vacío:**
+```blade
+@forelse($productos as $producto)
+    {{-- Renderizar producto --}}
+@empty
+    <div style="text-align: center; padding: 60px 20px;">
+        <div style="font-size: 80px; color: #ddd;">🔍</div>
+        <h2 style="color: #333; margin-top: 20px;">No se encontraron productos</h2>
+        <p style="color: #666;">@if(request('buscar')) Intenta con otros términos de búsqueda @else No hay productos disponibles en este momento @endif</p>
+        @if(request('buscar'))
+            <a href="{{ route('catalogo') }}" class="btn btn-primary">Ver todos los productos</a>
+        @endif
+    </div>
+@endforelse
+```
+
+**Características:**
+- Detecta contexto (búsqueda activa vs sin stock)
+- Mensaje adaptativo según situación
+- Botón para limpiar filtros si aplica
+- Diseño centrado y estéticamente agradable
+
+---
+
+## 👨‍💼 **3. Identificación Visual de Administradores**
+
+### **Sistema de Badge ADMIN:**
+Implementación de identificación visual clara para usuarios con rol administrador en mensajería.
+
+### **Backend - Detección de Rol:**
+```php
+// MensajeController.php
+public function obtenerNuevos(Request $request): JsonResponse
+{
+    $mensajes = Mensaje::where('destinatario_id', $request->destinatario_id)
+        ->where('id', '>', $request->ultimo_mensaje_id)
+        ->with('emisor')
+        ->get()
+        ->map(function($mensaje) {
+            return [
+                'id' => $mensaje->id,
+                'contenido' => $mensaje->contenido,
+                'usuario_nombre' => $mensaje->emisor->name,
+                'es_admin' => $mensaje->emisor->roles->contains('nombre', 'administrador'),
+                'created_at' => $mensaje->created_at->format('Y-m-d H:i:s')
+            ];
+        });
+    
+    return response()->json($mensajes);
+}
+```
+
+### **Frontend - Renderizado Dinámico:**
+```javascript
+function crearMensajeHTML(mensaje, esPropio) {
+    const badgeAdmin = mensaje.es_admin ? 
+        '<span style="...">ADMIN</span>' : '';
+    
+    const colorFondo = mensaje.es_admin ? 
+        'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : '#007bff';
+    
+    return `<div class="mensaje ${esPropio ? 'mensaje-propio' : 'mensaje-otro'}">
+        <div class="mensaje-header">
+            <strong>${mensaje.usuario_nombre}</strong>${badgeAdmin}
+        </div>
+        <div class="mensaje-contenido">${mensaje.contenido}</div>
+    </div>`;
+}
+```
+
+**Características visuales:**
+- Badge morado con gradiente para admins
+- Color diferenciado en burbujas de chat
+- Visible en mensajería y notificaciones globales
+- Se propaga a Web Notifications
+
+---
+
+## 💬 **4. Sistema de Mensajería en Tiempo Real**
+
+### **Arquitectura de Comunicación:**
+
+#### **Protocolo Utilizado: HTTP POLLING**
+> ⚠️ **Importante:** Este sistema **NO usa WebSockets, TCP ni UDP**. Implementa **HTTP Polling** mediante peticiones AJAX periódicas.
+
+### **¿Por qué HTTP Polling y no WebSockets?**
+- ✅ **Simplicidad:** No requiere servidor WebSocket adicional
+- ✅ **Compatibilidad:** Funciona en cualquier servidor web estándar
+- ✅ **Laravel nativo:** Usa rutas HTTP estándar de Laravel
+- ✅ **Sin dependencias:** No requiere Redis, Pusher ni Node.js
+- ⚠️ **Trade-off:** Menor eficiencia que WebSockets pero suficiente para este caso de uso
+
+### **Arquitectura del Polling:**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    CLIENTE (JavaScript)                     │
+├─────────────────────────────────────────────────────────────┤
+│  setInterval(() => {                                        │
+│      fetch('/mensajeria/obtener-nuevos')  // Cada 3s       │
+│        .then(response => response.json())                   │
+│        .then(mensajes => renderizarNuevos(mensajes))       │
+│  }, 3000);                                                  │
+└──────────────────────┬──────────────────────────────────────┘
+                       │ HTTP GET (AJAX)
+                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  SERVIDOR (Laravel)                         │
+├─────────────────────────────────────────────────────────────┤
+│  Route::get('/mensajeria/obtener-nuevos', ...)             │
+│  Controller: MensajeController@obtenerNuevos()              │
+│  Query: SELECT * FROM mensajes WHERE id > :ultimo_id        │
+└──────────────────────┬──────────────────────────────────────┘
+                       │ JSON Response
+                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│              BASE DE DATOS (MySQL/MariaDB)                  │
+│              Tabla: mensajes                                │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### **Implementación Técnica:**
+
+#### **A) Polling en Página de Mensajería** (3 segundos)
+```javascript
+// resources/views/mensajeria.blade.php
+let ultimoMensajeId = {{ $mensajes->last()->id ?? 0 }};
+
+function verificarNuevosMensajes() {
+    fetch(`/mensajeria/obtener-nuevos?destinatario_id=${destinatarioId}&ultimo_mensaje_id=${ultimoMensajeId}`)
+        .then(response => response.json())
+        .then(mensajes => {
+            mensajes.forEach(mensaje => {
+                const html = crearMensajeHTML(mensaje, false);
+                document.getElementById('chat-contenedor').insertAdjacentHTML('beforeend', html);
+                ultimoMensajeId = mensaje.id;
+            });
+            scrollToBottom();
+        });
+}
+
+setInterval(verificarNuevosMensajes, 3000); // Polling cada 3 segundos
+```
+
+#### **B) Envío AJAX sin Recargar**
+```javascript
+document.getElementById('form-enviar-mensaje').addEventListener('submit', function(e) {
+    e.preventDefault(); // Prevenir recarga tradicional
+    
+    const contenido = document.getElementById('input-mensaje').value;
+    
+    fetch('/mensajeria/enviar', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            destinatario_id: destinatarioId,
+            contenido: contenido
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Agregar mensaje al DOM inmediatamente
+        const html = crearMensajeHTML(data.mensaje, true);
+        document.getElementById('chat-contenedor').insertAdjacentHTML('beforeend', html);
+        document.getElementById('input-mensaje').value = '';
+        scrollToBottom();
+    });
+});
+```
+
+#### **C) Backend - Controller**
+```php
+// app/Http/Controllers/MensajeController.php
+
+public function obtenerNuevos(Request $request): JsonResponse
+{
+    $mensajes = Mensaje::where('destinatario_id', $request->destinatario_id)
+        ->where('id', '>', $request->ultimo_mensaje_id)
+        ->with('emisor')
+        ->orderBy('created_at', 'asc')
+        ->get()
+        ->map(function($mensaje) {
+            return [
+                'id' => $mensaje->id,
+                'contenido' => $mensaje->contenido,
+                'usuario_nombre' => $mensaje->emisor->name,
+                'es_admin' => $mensaje->emisor->roles->contains('nombre', 'administrador'),
+                'created_at' => $mensaje->created_at->format('Y-m-d H:i:s')
+            ];
+        });
+    
+    return response()->json($mensajes);
+}
+
+public function enviar(Request $request)
+{
+    $validated = $request->validate([
+        'destinatario_id' => 'required|exists:users,id',
+        'contenido' => 'required|string|max:1000'
+    ]);
+    
+    $mensaje = Mensaje::create([
+        'emisor_id' => auth()->id(),
+        'destinatario_id' => $validated['destinatario_id'],
+        'contenido' => $validated['contenido']
+    ]);
+    
+    // Si la petición es AJAX, devuelve JSON
+    if ($request->wantsJson()) {
+        return response()->json([
+            'success' => true,
+            'mensaje' => [
+                'id' => $mensaje->id,
+                'contenido' => $mensaje->contenido,
+                'usuario_nombre' => auth()->user()->name,
+                'es_admin' => auth()->user()->roles->contains('nombre', 'administrador'),
+                'created_at' => $mensaje->created_at->format('Y-m-d H:i:s')
+            ]
+        ]);
+    }
+    
+    return redirect()->back()->with('success', 'Mensaje enviado');
+}
+```
+
+### **Endpoints HTTP Creados:**
+```php
+// routes/web.php
+Route::middleware(['auth'])->group(function () {
+    Route::get('/mensajeria/obtener-nuevos', [MensajeController::class, 'obtenerNuevos']);
+    Route::get('/mensajeria/conteo-no-leidos', [MensajeController::class, 'conteoNoLeidos']);
+    Route::post('/mensajeria/enviar', [MensajeController::class, 'enviar']);
+});
+```
+
+### **Características del Sistema:**
+- ✅ **Tiempo real simulado:** Latencia máxima de 3 segundos
+- ✅ **Ligero:** Solo trae mensajes nuevos (no todos)
+- ✅ **Stateful:** Mantiene ID del último mensaje recibido
+- ✅ **Scroll automático:** Se desplaza al último mensaje
+- ✅ **UX fluida:** Input se limpia y mantiene foco
+- ✅ **Manejo de errores:** Alert si falla la petición
+- ✅ **Sin recargas:** Todo funciona mediante AJAX
+
+---
+
+## 📊 **Resumen Técnico del Proyecto**
 - **Implementación:** Badge morado junto al nombre del administrador
 - **Características:**
   - Solo aparece para usuarios con rol 'admin'
@@ -3711,36 +3989,80 @@ php artisan tinker
   - `resources/views/admin/pedidos/show.blade.php` - Detalle de pedido
 - **Resultado:** Todas las imágenes de productos ahora se visualizan correctamente en el panel de administración
 
+#### **10. Corrección de Subida de Imágenes - Prefijo storage/** 📸
+- **Problema crítico:** Las imágenes subidas mediante el formulario admin no se mostraban después de guardar
+- **Causa raíz:** 
+  - El controlador guardaba `productos/archivo.jpg` en la BD
+  - Pero Laravel necesita `storage/productos/archivo.jpg` para encontrar el archivo via symlink
+  - Las vistas usan `asset($producto->imagen)` que busca en `public/`
+- **Solución implementada:**
+  ```php
+  // ANTES (❌ INCORRECTO)
+  $validated['imagen'] = $request->file('imagen')->store('productos', 'public');
+  // Guardaba en BD: productos/archivo.jpg
+  // asset() generaba: http://localhost:8000/productos/archivo.jpg (404)
+  
+  // DESPUÉS (✅ CORRECTO)
+  $path = $request->file('imagen')->store('productos', 'public');
+  $validated['imagen'] = 'storage/' . $path;
+  // Guarda en BD: storage/productos/archivo.jpg
+  // asset() genera: http://localhost:8000/storage/productos/archivo.jpg (✅ funciona)
+  ```
+- **Flujo de almacenamiento:**
+  1. Imagen física: `storage/app/public/productos/HASH.jpg`
+  2. Symlink: `public/storage` → `storage/app/public`
+  3. BD guarda: `storage/productos/HASH.jpg`
+  4. Vista renderiza: `asset('storage/productos/HASH.jpg')`
+  5. URL final: `http://localhost:8000/storage/productos/HASH.jpg`
+- **Cambios en controlador:**
+  - `ProductoController::store()` - Agregar prefijo al guardar
+  - `ProductoController::update()` - Agregar prefijo y manejar eliminación correcta
+  - `ProductoController::destroy()` - Remover prefijo antes de eliminar del storage
+- **Archivos modificados:**
+  - `app/Http/Controllers/ProductoController.php` (líneas 84-86, 110-119, 134-139)
+- **Resultado:** ✅ Las imágenes subidas ahora se visualizan correctamente inmediatamente después de crear/editar productos
+
 ---
 
-## 🔧 RESUMEN DE CORRECCIONES Y MEJORAS
+## � **Resumen Técnico del Proyecto**
 
-### **Errores Corregidos:**
-1. ✅ UserObserver buscaba rol 'user' → Ahora busca 'usuario'
-2. ✅ Variable $token indefinida → Ahora usa `request()->route('token')`
-3. ✅ Columna 'categoria' inexistente → Eliminada de búsqueda
-4. ✅ Imágenes no visibles en API → Agregadas URLs completas
-5. ✅ Imágenes no visibles en panel admin → Corregidas rutas de assets
-6. ✅ Mensajes requieren recargar → Ahora AJAX en tiempo real
+### **Stack Tecnológico Completo:**
 
-### **Funcionalidades Agregadas:**
-1. 🎯 Badge "ADMIN" visible en mensajes y notificaciones
-2. 🌍 Sistema de notificaciones globales en toda la app
-3. 🚀 Envío de mensajes por AJAX sin recargar
-4. 📱 Notificaciones del navegador (Web Notifications API)
-5. 💬 Notificaciones visuales elegantes con animación
-6. 🔄 Polling inteligente (3s en mensajería, 5s en otras páginas)
-7. 🖼️ API REST con imágenes funcionando correctamente
-8. 🎨 Visualización correcta de imágenes en panel administrativo
+**Backend:**
+- Laravel 11 (PHP 8.2+)
+- MySQL/MariaDB  
+- Eloquent ORM
+- Fortify (Autenticación)
+- Sanctum (API Tokens)
+- Observer Pattern
+- Form Requests
 
-### **Experiencia de Usuario Mejorada:**
-- ⚡ Mensajería instantánea sin recargas
-- 🔔 Notificaciones desde cualquier página
-- 👤 Identificación clara de administradores
-- 🔍 Estados vacíos informativos
-- 🎨 Diseño consistente y moderno
-- 📦 API lista para consumo externo (apps móviles, Postman, etc.)
-- 🖼️ Todas las imágenes visibles en todas las secciones (web y API)
+**Frontend:**
+- Blade Templates (sin Livewire)
+- JavaScript Vanilla (ES6+)
+- Fetch API (AJAX)
+- Tailwind CSS
+- Font Awesome
+- Web Notifications API
+
+### **Protocolo de Comunicación Mensajería:**
+> **⚠️ IMPORTANTE:** Este sistema **NO usa WebSockets, TCP puro ni UDP**
+
+**Tecnología implementada: HTTP POLLING**
+```
+Cliente → HTTP GET cada 3s → Laravel Route → Controller → MySQL → JSON Response
+```
+
+**¿Por qué HTTP Polling y no WebSockets?**
+- ✅ **Simplicidad:** No requiere servidor WebSocket (Node.js, Socket.io, etc.)
+- ✅ **Compatibilidad:** Funciona en cualquier hosting con Apache/Nginx
+- ✅ **Sin dependencias:** No necesita Redis, Pusher ni servicios externos
+- ✅ **Laravel nativo:** Usa rutas HTTP estándar
+- ⚠️ **Trade-off:** Latencia de 3-5s vs tiempo real puro de WebSockets
+
+**Intervalos de polling:**
+- 3 segundos en página de mensajería
+- 5 segundos para notificaciones globales en otras páginas
 
 ---
 

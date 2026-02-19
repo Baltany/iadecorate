@@ -81,7 +81,8 @@ class ProductoController extends Controller
 
         // Manejar la subida de imagen
         if ($request->hasFile('imagen')) {
-            $validated['imagen'] = $request->file('imagen')->store('productos', 'public');
+            $path = $request->file('imagen')->store('productos', 'public');
+            $validated['imagen'] = 'storage/' . $path;
         }
 
         Producto::create($validated);
@@ -107,10 +108,15 @@ class ProductoController extends Controller
         // Manejar la subida de nueva imagen
         if ($request->hasFile('imagen')) {
             // Eliminar imagen anterior si existe
-            if ($producto->imagen && Storage::disk('public')->exists($producto->imagen)) {
-                Storage::disk('public')->delete($producto->imagen);
+            if ($producto->imagen) {
+                // Remover 'storage/' del path para buscar en disco 'public'
+                $oldPath = str_replace('storage/', '', $producto->imagen);
+                if (Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
             }
-            $validated['imagen'] = $request->file('imagen')->store('productos', 'public');
+            $path = $request->file('imagen')->store('productos', 'public');
+            $validated['imagen'] = 'storage/' . $path;
         }
 
         $producto->update($validated);
@@ -126,8 +132,12 @@ class ProductoController extends Controller
         $producto = Producto::findOrFail($id);
 
         // Eliminar imagen asociada si existe
-        if ($producto->imagen && Storage::disk('public')->exists($producto->imagen)) {
-            Storage::disk('public')->delete($producto->imagen);
+        if ($producto->imagen) {
+            // Remover 'storage/' del path para buscar en disco 'public'
+            $imagePath = str_replace('storage/', '', $producto->imagen);
+            if (Storage::disk('public')->exists($imagePath)) {
+                Storage::disk('public')->delete($imagePath);
+            }
         }
 
         $producto->delete();
