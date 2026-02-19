@@ -52,6 +52,7 @@ class ProductoController extends Controller
      */
     public function show(string $id): JsonResponse
     {
+        /** @var Producto|null $producto */
         $producto = Producto::find($id);
 
         if (!$producto) {
@@ -72,6 +73,7 @@ class ProductoController extends Controller
      */
     public function update(Request $request, string $id): JsonResponse
     {
+        /** @var Producto|null $producto */
         $producto = Producto::find($id);
 
         if (!$producto) {
@@ -104,6 +106,7 @@ class ProductoController extends Controller
      */
     public function destroy(string $id): JsonResponse
     {
+        /** @var Producto|null $producto */
         $producto = Producto::find($id);
 
         if (!$producto) {
@@ -133,7 +136,7 @@ class ProductoController extends Controller
             'precio' => $producto->precio,
             'stock' => $producto->stock,
             'imagen' => $producto->imagen ? url($producto->imagen) : null,
-            'imagen_url' => $producto->imagen ? asset($producto->imagen) : asset('img/image.png'),
+            'imagen_url' => $producto->imagen ? asset($producto->imagen) : asset('img/imageDecorate.png'),
             'categoria_id' => $producto->categoria_id,
             'created_at' => $producto->created_at,
             'updated_at' => $producto->updated_at,
