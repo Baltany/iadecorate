@@ -18,22 +18,22 @@ Route::get('/', function () {
     return view('index');
 })->name('home');
 
-// Catálogo - Público, cualquiera puede ver productos
-Route::get('/catalogo', [ProductoController::class, 'index'])->name('catalogo');
-
 // Información - Público
 Route::get('/info', function () {
     return view('info');
 })->name('info');
 
-// Detalle de producto - Público, cualquiera puede ver detalles
-Route::get('/producto/{id}', [ProductoController::class, 'show'])->name('producto.detalle');
-
 // ==========================================
-// RUTAS PROTEGIDAS (Requieren autenticación)
+// RUTAS PROTEGIDAS (Requieren autenticación Y email verificado)
 // ==========================================
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
+
+    // Catálogo - Requiere autenticación y email verificado
+    Route::get('/catalogo', [ProductoController::class, 'index'])->name('catalogo');
+
+    // Detalle de producto - Requiere autenticación y email verificado
+    Route::get('/producto/{id}', [ProductoController::class, 'show'])->name('producto.detalle');
 
     // Carrito - Solo usuarios logueados pueden ver y gestionar su carrito
     Route::get('/carrito', [CarritoController::class, 'index'])->name('carrito');
@@ -74,7 +74,7 @@ Route::middleware(['auth'])->group(function () {
 // RUTAS ADMINISTRADOR (Requieren autenticación y rol admin)
 // ==========================================
 
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     // Main / Dashboard
     Route::get('/main', [AdminController::class, 'main'])->name('main');
 

@@ -92,4 +92,17 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->roles()->whereIn('nombre', $roles)->exists();
     }
+
+    /**
+     * Enviar notificación de verificación de email con manejo de errores
+     */
+    public function sendEmailVerificationNotification()
+    {
+        try {
+            $this->notify(new \Illuminate\Auth\Notifications\VerifyEmail);
+        } catch (\Exception $e) {
+            // Registrar error pero no interrumpir el proceso de registro
+            \Illuminate\Support\Facades\Log::error('Error al enviar email de verificación: ' . $e->getMessage());
+        }
+    }
 }

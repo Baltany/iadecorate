@@ -7,10 +7,15 @@ use App\Actions\Fortify\ResetUserPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+use Laravel\Fortify\Contracts\RegisterResponse;
+use Laravel\Fortify\Contracts\VerifyEmailResponse;
 use Laravel\Fortify\Fortify;
+use App\Models\User;
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -19,7 +24,30 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Personalizar la respuesta después del registro (sin login automático)
+        $this->app->singleton(RegisterResponse::class, function () {
+            return new class implements RegisterResponse {
+                public function toResponse($request)
+                {
+                    return redirect()->route('login')->with('status', 'registered');
+                }
+            };
+        });
+
+        // Personalizar la respuesta después de verificar email
+        $this->app->singleton(VerifyEmailResponse::class, function () {
+            return new class implements VerifyEmailResponse {
+                public function toResponse($request)
+                {
+                    // Asegurar que el usuario no esté autenticado
+                    Auth::guard('web')->logout();
+                    $request->session()->invalidate();
+                    $request->session()->regenerateToken();
+
+                    return redirect()->route('login')->with('status', 'verified');
+                }
+            };
+        });
     }
 
     /**
@@ -39,6 +67,22 @@ class FortifyServiceProvider extends ServiceProvider
     {
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::createUsersUsing(CreateNewUser::class);
+
+        // Autenticación personalizada con verificación de email
+        Fortify::authenticateUsing(function (Request $request) {
+            $user = User::where('email', $request->email)->first();
+
+            if ($user && Hash::check($request->password, $user->password)) {
+                // Verificar si el email está verificado
+                if (is_null($user->email_verified_at)) {
+                    throw ValidationException::withMessages([
+                        'email' => ['Debes verificar tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada.'],
+                    ]);
+                }
+
+                return $user;
+            }
+        });
 
         // Redirigir según el rol después del login
         Fortify::redirects('login', function () {
