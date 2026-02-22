@@ -13,7 +13,7 @@ class Mensaje extends Model
     ];
 
     /**
-     * Relación con usuario emisor
+     * Relacion con usuario emisor
      */
     public function usuario()
     {
@@ -21,7 +21,7 @@ class Mensaje extends Model
     }
 
     /**
-     * Relación con usuario destinatario
+     * Relacion con usuario destinatario
      */
     public function destinatario()
     {

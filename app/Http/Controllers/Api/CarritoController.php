@@ -26,7 +26,7 @@ class CarritoController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage (añadir producto al carrito).
+     * Añadir producto al carrito
      */
     public function store(Request $request): JsonResponse
     {
@@ -70,7 +70,7 @@ class CarritoController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Muestra productos en el carrito
      */
     public function show(string $id): JsonResponse
     {
@@ -90,7 +90,7 @@ class CarritoController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Actualiza los productos en el carrito
      */
     public function update(Request $request, string $id): JsonResponse
     {
@@ -126,7 +126,7 @@ class CarritoController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Elimina un producto del carrito
      */
     public function destroy(string $id): JsonResponse
     {

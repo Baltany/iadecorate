@@ -45,7 +45,7 @@ class User extends Authenticatable implements MustVerifyEmail
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * Obtiener los atributos que deben ser convertidos a tipos nativos.
      *
      * @return array<string, string>
      */
@@ -58,7 +58,7 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Get the user's initials
+     * Obtiener las iniciales del nombre del usuario para mostrar en el avatar
      */
     public function initials(): string
     {

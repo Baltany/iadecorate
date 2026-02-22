@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 class MensajeController extends Controller
 {
     /**
-     * Mostrar mensajería del usuario
+     * Mostrar mensajeria del usuario
      */
     public function index(Request $request)
     {
@@ -39,7 +39,7 @@ class MensajeController extends Controller
             ->get();
         }
 
-        return view('mensajeria', compact('mensajes', 'usuarios', 'destinatarioId'));
+        return view('cliente.mensajeria', compact('mensajes', 'usuarios', 'destinatarioId'));
     }
 
     /**
@@ -118,7 +118,7 @@ class MensajeController extends Controller
     }
 
     /**
-     * Obtener conteo de mensajes no leídos (notificaciones globales)
+     * Obtener conteo de mensajes no leidos (notificaciones globales)
      */
     public function conteoNoLeidos()
     {

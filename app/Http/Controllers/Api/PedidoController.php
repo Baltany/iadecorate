@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 class PedidoController extends Controller
 {
     /**
-     * Display a listing of the resource (pedidos del usuario autenticado).
+     * Muestra pedidos del usuario autenticado
      */
     public function index(Request $request): JsonResponse
     {
@@ -30,7 +30,7 @@ class PedidoController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage (crear pedido desde carrito).
+     * Crea un nuevo pedido a partir del carrito del usuario autenticado
      */
     public function store(Request $request): JsonResponse
     {
@@ -109,7 +109,7 @@ class PedidoController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Ver productos en un pedido especifico
      */
     public function show(string $id): JsonResponse
     {
@@ -129,7 +129,7 @@ class PedidoController extends Controller
     }
 
     /**
-     * Update the specified resource in storage (actualizar estado del pedido).
+     * Actualiza el estado del pedido solo del admin
      */
     public function update(Request $request, string $id): JsonResponse
     {
@@ -156,7 +156,7 @@ class PedidoController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Elimina un pedido (solo para cancelar pedidos pendientes)
      */
     public function destroy(string $id): JsonResponse
     {

@@ -21,45 +21,35 @@ class ProductoController extends Controller
             $buscar = $request->buscar;
             $query->where(function($q) use ($buscar) {
                 $q->where('nombre', 'LIKE', '%' . $buscar . '%')
-                  ->orWhere('descripcion', 'LIKE', '%' . $buscar . '%');
+                ->orWhere('descripcion', 'LIKE', '%' . $buscar . '%');
             });
         }
 
         $productos = $query->where('stock', '>', 0)->get();
 
-        return view('catalogo', compact('productos'));
+        return view('cliente.catalogo', compact('productos'));
     }
 
-    /**
-     * Mostrar detalle de un producto (PÚBLICO)
-     */
+
     public function show($id)
     {
         $producto = Producto::findOrFail($id);
 
-        return view('producto', compact('producto'));
+        return view('cliente.producto', compact('producto'));
     }
 
-    /**
-     * Display a listing of products (ADMIN)
-     */
+
     public function adminIndex()
     {
         $productos = Producto::orderBy('id', 'desc')->paginate(15);
         return view('admin.productos.index', compact('productos'));
     }
 
-    /**
-     * Show the form for creating a new product (ADMIN)
-     */
     public function create()
     {
         return view('admin.productos.create');
     }
 
-    /**
-     * Show the form for editing the specified product (ADMIN)
-     */
     public function edit($id)
     {
         $producto = Producto::findOrFail($id);

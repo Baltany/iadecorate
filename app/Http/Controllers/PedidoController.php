@@ -20,7 +20,7 @@ class PedidoController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('pedidos', compact('pedidos'));
+        return view('cliente.pedidos', compact('pedidos'));
     }
 
     /**
@@ -33,7 +33,7 @@ class PedidoController extends Controller
             ->with('detalles.producto')
             ->firstOrFail();
 
-        return view('pedido-detalle', compact('pedido'));
+        return view('cliente.pedido-detalle', compact('pedido'));
     }
 
     /**
@@ -56,7 +56,7 @@ class PedidoController extends Controller
         $envio = 5.99;
         $total = $subtotal + $envio;
 
-        return view('checkout', compact('carritoItems', 'subtotal', 'envio', 'total'));
+        return view('cliente.checkout', compact('carritoItems', 'subtotal', 'envio', 'total'));
     }
 
     /**

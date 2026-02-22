@@ -10,26 +10,26 @@ use App\Http\Controllers\IncidenciaController;
 use App\Http\Controllers\AdminController;
 
 // ==========================================
-// RUTAS PÚBLICAS (Sin autenticación)
+// RUTAS PÚBLICAS
 // ==========================================
 
 // Página principal - Inicio (index)
 Route::get('/', function () {
-    return view('index');
+    return view('publico.index');
 })->name('home');
 
 // Información - Público
 Route::get('/info', function () {
-    return view('info');
+    return view('publico.info');
 })->name('info');
 
 // ==========================================
-// RUTAS PROTEGIDAS (Requieren autenticación Y email verificado)
+// RUTAS PROTEGIDAS
 // ==========================================
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    // Catálogo - Requiere autenticación y email verificado
+    // Catálogo - Requiere autenticacion y email verificado
     Route::get('/catalogo', [ProductoController::class, 'index'])->name('catalogo');
 
     // Detalle de producto - Requiere autenticación y email verificado
@@ -65,13 +65,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Entorno 3D - Solo usuarios logueados
     Route::get('/entorno', function () {
-        return view('entorno'); // Vista del entorno 3D
+        return view('cliente.entorno'); // Vista del entorno 3D
     })->name('entorno');
 
 });
 
 // ==========================================
-// RUTAS ADMINISTRADOR (Requieren autenticación y rol admin)
+// RUTAS ADMINISTRADOR
 // ==========================================
 
 Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -100,7 +100,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     Route::delete('/productos/{id}', [ProductoController::class, 'destroy'])->name('productos.destroy');
 });
 
-// Ruta del dashboard (Flux - para compatibilidad)
+// Ruta del dashboard (Flux) No se usa
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])

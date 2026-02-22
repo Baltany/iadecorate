@@ -24,7 +24,7 @@ class CarritoController extends Controller
 
         $envio = 5.99;
 
-        return view('carrito', compact('carritoItems', 'subtotal', 'envio'));
+        return view('cliente.carrito', compact('carritoItems', 'subtotal', 'envio'));
     }
 
     /**

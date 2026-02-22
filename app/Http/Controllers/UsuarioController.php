@@ -15,7 +15,7 @@ class UsuarioController extends Controller
      */
     public function perfil()
     {
-        return view('perfil');
+        return view('cliente.perfil');
     }
 
     /**

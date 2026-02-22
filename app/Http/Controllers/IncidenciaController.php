@@ -22,7 +22,7 @@ class IncidenciaController extends Controller
             ->orderBy('orden')
             ->get();
 
-        return view('incidencias', compact('incidencias', 'preguntasFrecuentes'));
+        return view('cliente.incidencias', compact('incidencias', 'preguntasFrecuentes'));
     }
 
     /**
