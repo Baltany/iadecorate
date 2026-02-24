@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\CarritoController;
 use App\Http\Controllers\PedidoController;
@@ -100,10 +101,18 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     Route::delete('/productos/{id}', [ProductoController::class, 'destroy'])->name('productos.destroy');
 });
 
-// Ruta del dashboard (Flux) No se usa
-
-Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
+// Ruta del dashboard - Redirige según el rol del usuario
+Route::get('/dashboard', function () {
+    if (Auth::check()) {
+        // Si es admin, redirigir a admin/main
+        if (Auth::user()->hasRole('admin')) {
+            return redirect()->route('admin.main');
+        }
+        // Si es cliente o cualquier otro rol, redirigir a home
+        return redirect()->route('home');
+    }
+    // Si no está autenticado, redirigir a login
+    return redirect()->route('login');
+})->name('dashboard');
 
 require __DIR__.'/settings.php';
