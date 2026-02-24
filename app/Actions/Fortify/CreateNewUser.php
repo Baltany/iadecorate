@@ -27,11 +27,13 @@ class CreateNewUser implements CreatesNewUsers
         $user = User::create([
             'name' => $input['name'],
             'email' => $input['email'],
-            'password' => $input['password'],
-        ]);
+            'password' => $input['password'],            'telefono' => $input['telefono'],
+            'direccion' => $input['direccion'],
+            'ciudad' => $input['ciudad'],
+            'codigo_postal' => $input['codigo_postal'],        ]);
 
-        // El email de verificación se envía automáticamente
-        // mediante el evento Registered (ver AppServiceProvider)
+        // El email de verificacion se envia automaticamente
+        // mediante el evento Registered (AppServiceProvider)
 
         return $user;
     }

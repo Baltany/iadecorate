@@ -17,6 +17,10 @@ trait ProfileValidationRules
         return [
             'name' => $this->nameRules(),
             'email' => $this->emailRules($userId),
+            'telefono' => ['required', 'string', 'min:9', 'max:20', 'regex:/^[0-9+\s\-\(\)]+$/'],
+            'direccion' => ['required', 'string', 'min:5', 'max:500'],
+            'ciudad' => ['required', 'string', 'min:2', 'max:100'],
+            'codigo_postal' => ['required', 'string', 'min:4', 'max:10', 'regex:/^[0-9]{4,10}$/'],
         ];
     }
 
