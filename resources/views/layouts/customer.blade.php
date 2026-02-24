@@ -48,9 +48,9 @@
         let ultimoMensajeIdGlobal = 0;
         let notificationTimeoutGlobal;
 
-        // Función para mostrar notificación visual global
+        // Función para mostrar notificacion visual global
         function mostrarNotificacionGlobal(mensaje) {
-            // Limpiar notificación anterior si existe
+            // Limpiar notificacion anterior si existe
             if (notificationTimeoutGlobal) {
                 clearTimeout(notificationTimeoutGlobal);
             }
@@ -96,7 +96,7 @@
 
             document.body.appendChild(notificacion);
 
-            // Agregar animación si no existe
+            // Agregar animacion si no existe
             if (!document.getElementById('notificationStylesGlobal')) {
                 const style = document.createElement('style');
                 style.id = 'notificationStylesGlobal';
@@ -125,19 +125,19 @@
                 document.head.appendChild(style);
             }
 
-            // Remover después de 5 segundos
+            // Remover despues de 5 segundos
             notificationTimeoutGlobal = setTimeout(() => {
                 notificacion.style.animation = 'slideOutRight 0.3s ease-out';
                 setTimeout(() => notificacion.remove(), 300);
             }, 5000);
 
-            // Click para ir a mensajería
+            // Click para ir a mensajeria
             notificacion.onclick = () => {
                 window.location.href = '/mensajeria';
             };
         }
 
-        // Función para mostrar notificación del navegador
+        // Función para mostrar notificacion del navegador
         function mostrarNotificacionNavegador(mensaje) {
             if (!("Notification" in window)) {
                 return;
@@ -175,7 +175,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.mensajes && data.mensajes.length > 0) {
-                    // Mostrar notificación para cada mensaje nuevo
+                    // Mostrar notificacion para cada mensaje nuevo
                     data.mensajes.forEach(mensaje => {
                         if (mensaje.id > ultimoMensajeIdGlobal) {
                             mostrarNotificacionGlobal(mensaje);
@@ -190,7 +190,7 @@
             });
         }
 
-        // Iniciar polling solo si NO estamos en la página de mensajería
+        // Iniciar polling solo si NO estamos en la pagina de mensajeria
         if (!window.location.pathname.includes('/mensajeria')) {
             // Solicitar permiso para notificaciones
             if ("Notification" in window && Notification.permission === "default") {

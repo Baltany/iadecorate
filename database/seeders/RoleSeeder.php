@@ -14,7 +14,7 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
-        // Crear roles básicos
+        // Crear roles basicos
         $adminRole = Rol::create([
             'nombre' => 'admin',
             'descripcion' => 'Administrador del sistema con acceso completo'

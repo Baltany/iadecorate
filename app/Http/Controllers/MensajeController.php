@@ -25,7 +25,7 @@ class MensajeController extends Controller
         // Obtener el destinatario seleccionado (si hay)
         $destinatarioId = $request->get('destinatario_id', $usuarios->first()->id ?? null);
 
-        // Obtener mensajes SOLO de la conversación entre estos dos usuarios
+        // Obtener mensajes SOLO de la conversacion entre estos dos usuarios
         $mensajes = collect();
         if ($destinatarioId) {
             $mensajes = Mensaje::where(function($query) use ($destinatarioId) {
@@ -58,7 +58,7 @@ class MensajeController extends Controller
             'mensaje' => $validated['mensaje'],
         ]);
 
-        // Si es una petición AJAX, devolver JSON
+        // Si es una peticion AJAX, devolver JSON
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
@@ -68,7 +68,7 @@ class MensajeController extends Controller
             ]);
         }
 
-        // Si es petición normal, redirigir
+        // Si es peticion normal, redirigir
         return redirect()->route('mensajeria', ['destinatario_id' => $validated['destinatario_id']])
             ->with('success', 'Mensaje enviado');
     }
@@ -85,7 +85,7 @@ class MensajeController extends Controller
             return response()->json(['mensajes' => []]);
         }
 
-        // Obtener mensajes nuevos de la conversación
+        // Obtener mensajes nuevos de la conversacion
         $mensajes = Mensaje::where('id', '>', $ultimoMensajeId)
             ->where(function($query) use ($destinatarioId) {
                 $query->where(function($q) use ($destinatarioId) {

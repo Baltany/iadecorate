@@ -23,8 +23,8 @@ class ProductoFactory extends Factory
             'descripcion' => fake()->paragraph(3),
             'precio' => fake()->randomFloat(2, 29.99, 1999.99),
             'stock' => fake()->numberBetween(0, 100),
-            'imagen' => 'image.png', // Se puede usar Faker para generar URLs de imágenes
-            'categoria_id' => null, // O fake()->numberBetween(1, 5) si tienes categorías
+            'imagen' => 'image.png',
+            'categoria_id' => null, 
         ];
     }
 }
