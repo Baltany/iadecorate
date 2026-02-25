@@ -1,0 +1,229 @@
+{
+  "info": {
+    "_postman_id": "74dda741-e137-40db-91a3-d608afa1d233",
+    "name": "Laravel Endpoints (localhost)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Token",
+      "id": "d723201e-8a58-4dc2-b89c-970835b4a39b",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\":\"danieldelosreyesruiz431@gmail.com\",\"password\":\"12345678\",\"device_name\":\"postman\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:8000/api/token",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "token"
+          ]
+        },
+        "description": "Generated from cURL: curl -X POST \"localhost:8000/api/sanctum/token\" -H \"Content-Type: application/json\" -d '{\"email\":\"dlosrui0211@iesmarquesdecomares.org\",\"password\":\"12345678\",\"device_name\":\"postman\"}'"
+      },
+      "response": []
+    },
+    {
+      "name": "API - Listar productos",
+      "id": "65ddf209-5cf8-4267-a57c-ad8a5d648acb",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8000/api/productos",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "productos"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "API - Crear producto (auth)",
+      "id": "44521fb4-02f7-4ea2-b3fd-be1c6df5c2b5",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Producto\",\n  \"precio\": 100,\n  \"stock\": 10,\n  \"descripcion\": \"Descripción de ejemplo\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8000/api/productos",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "productos"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "API - Actualizar producto (auth)",
+      "id": "85e33a9f-f1b5-4ecd-a5a0-bcfebb1f1b5d",
+      "request": {
+        "method": "PUT",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "API - Ver producto ID",
+      "id": "e015eb45-c1c9-48b7-a6ce-c3e4b9061adf",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8000/api/productos/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "productos",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "API - Carrito (auth)",
+      "id": "6d001056-f186-46f1-83ef-4d2c3bdbeb0e",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/carrito",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "carrito"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "API - Crear Carrito (auth)",
+      "id": "3daf0d4d-021e-4309-ba46-5fdc439b1d95",
+      "request": {
+        "method": "POST",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "API - Pedidos (auth)",
+      "id": "da895254-c65d-4c77-837c-3dfdabc1cd52",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer 1|cfE8ylh0ONBuxyXQBzreqnMp8ZDdZ0DVU9QAX03Xe7fab717",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8000/api/pedidos",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "pedidos"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "API - Ver usuario autenticado (auth)",
+      "id": "a418e66a-6a40-4898-9589-7395ca40b5fd",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/user",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "user"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
